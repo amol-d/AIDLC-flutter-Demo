@@ -12,7 +12,9 @@ GitHub → repo → Settings → Secrets and variables → Actions → *New repo
 | `OPENAI_API_KEY` | optional OpenAI-backed tooling | https://platform.openai.com/api-keys |
 | `FIREBASE_SERVICE_ACCOUNT` | deploys | see [firebase-setup.md](./firebase-setup.md) |
 | `FIREBASE_PROJECT_ID` | deploys | Firebase console |
-| `FIREBASE_ANDROID_APP_ID` | APK distribution | Firebase console → Android app |
+| `FIREBASE_ANDROID_APP_ID_DEV` | APK distribution (com.example.app1.dev) | Firebase console → Android app |
+| `FIREBASE_ANDROID_APP_ID_PREPROD` | APK distribution (com.example.app1.preprod) | Firebase console → Android app |
+| `FIREBASE_ANDROID_APP_ID_PROD` | APK distribution (com.example.app1) | Firebase console → Android app |
 
 Equivalent CLI (after `gh auth login`):
 
@@ -21,7 +23,9 @@ gh secret set ANTHROPIC_API_KEY --body "<key>"
 gh secret set OPENAI_API_KEY --body "<key>"
 gh secret set FIREBASE_SERVICE_ACCOUNT < service-account.json
 gh secret set FIREBASE_PROJECT_ID --body "<project-id>"
-gh secret set FIREBASE_ANDROID_APP_ID --body "1:1234567890:android:abc123"
+gh secret set FIREBASE_ANDROID_APP_ID_DEV --body "1:1234567890:android:abc123"
+gh secret set FIREBASE_ANDROID_APP_ID_PREPROD --body "1:1234567890:android:def456"
+gh secret set FIREBASE_ANDROID_APP_ID_PROD --body "1:1234567890:android:ghi789"
 ```
 
 ## 2. Install the Claude GitHub App
