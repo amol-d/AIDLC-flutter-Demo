@@ -1,0 +1,17 @@
+{
+  "@@locale": "hi",
+  "appName": "AIDLC डेमो",
+  "login": "लॉगिन",
+  "logout": "लॉगआउट",
+  "home": "होम",
+  "username": "उपयोगकर्ता नाम",
+  "password": "पासवर्ड",
+  "signIn": "साइन इन करें",
+  "welcomeBack": "वापसी पर स्वागत है",
+  "fieldRequired": "यह फ़ील्ड आवश्यक है",
+  "genericError": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
+  "retry": "पुनः प्रयास करें",
+  "invalidCredentials": "अमान्य उपयोगकर्ता नाम या पासवर्ड",
+  "demoCredentialsHint": "डेमो क्रेडेंशियल: emilys / emilyspass",
+  "environment": "वातावरण"
+}

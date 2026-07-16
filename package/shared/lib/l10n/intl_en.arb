@@ -1,0 +1,17 @@
+{
+  "@@locale": "en",
+  "appName": "AIDLC Demo",
+  "login": "Login",
+  "logout": "Logout",
+  "home": "Home",
+  "username": "Username",
+  "password": "Password",
+  "signIn": "Sign in",
+  "welcomeBack": "Welcome back",
+  "fieldRequired": "This field is required",
+  "genericError": "Something went wrong. Please try again.",
+  "retry": "Retry",
+  "invalidCredentials": "Invalid username or password",
+  "demoCredentialsHint": "Demo credentials: emilys / emilyspass",
+  "environment": "Environment"
+}

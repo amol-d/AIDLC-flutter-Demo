@@ -1,0 +1,30 @@
+name: data
+description: Data layer - API clients, DTOs, mappers, preferences, and the Repository implementation.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ">=3.9.0 <4.0.0"
+  flutter: ">=3.35.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  dio: ^5.4.0
+  domain:
+    path: ../domain
+  get_it: ^7.7.0
+  injectable: ^2.4.2
+  json_annotation: ^4.9.0
+  shared:
+    path: ../shared
+  shared_preferences: ^2.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  build_runner: ^2.4.11
+  flutter_lints: ^5.0.0
+  injectable_generator: ^2.6.2
+  json_serializable: ^6.8.0
+  mocktail: ^1.0.4
