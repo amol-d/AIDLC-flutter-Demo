@@ -14,6 +14,14 @@
   "invalidCredentials": "अमान्य उपयोगकर्ता नाम या पासवर्ड",
   "demoCredentialsHint": "डेमो क्रेडेंशियल: emilys / emilyspass",
   "environment": "वातावरण",
+  "versionLabel": "संस्करण {version}",
+  "@versionLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "settings": "सेटिंग्स",
   "language": "भाषा",
   "english": "English",

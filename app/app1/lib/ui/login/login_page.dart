@@ -16,7 +16,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => GetIt.I<LoginBloc>(),
+      create: (_) => GetIt.I<LoginBloc>()..add(const LoginEvent.started()),
       child: const _LoginView(),
     );
   }
@@ -159,6 +159,15 @@ class _LoginViewState extends State<_LoginView> {
                               )
                             : Text(s.signIn),
                       ),
+                      if (state.appVersion.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          s.versionLabel(state.appVersion),
+                          key: const Key('login_version_label'),
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
                     ],
                   ),
                 );

@@ -10,15 +10,30 @@ import 'package:shared/shared.dart';
 
 class MockLoginUseCase extends Mock implements LoginUseCase {}
 
+class MockGetAppVersionUseCase extends Mock implements GetAppVersionUseCase {}
+
 class MockAppNavigator extends Mock implements AppNavigator {}
 
 void main() {
   final getIt = GetIt.instance;
 
+  setUpAll(() {
+    registerFallbackValue(const NoInput());
+  });
+
   setUp(() {
+    final getAppVersionUseCase = MockGetAppVersionUseCase();
+    when(
+      () => getAppVersionUseCase.execute(any()),
+    ).thenAnswer((_) async => const GetAppVersionOutput(version: '9.9.9+99'));
+
     // Pages resolve their bloc from GetIt, so tests must register it first.
     getIt.registerFactory<LoginBloc>(
-      () => LoginBloc(MockLoginUseCase(), MockAppNavigator()),
+      () => LoginBloc(
+        MockLoginUseCase(),
+        getAppVersionUseCase,
+        MockAppNavigator(),
+      ),
     );
   });
 
@@ -45,6 +60,14 @@ void main() {
     expect(find.byKey(const Key('login_password_field')), findsOneWidget);
     expect(find.byKey(const Key('login_submit_button')), findsOneWidget);
     expect(find.text('Welcome back'), findsOneWidget);
+  });
+
+  testWidgets('shows the app version under the submit button', (tester) async {
+    await tester.pumpWidget(buildSubject());
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('login_version_label')), findsOneWidget);
+    expect(find.text('Version 9.9.9+99'), findsOneWidget);
   });
 
   testWidgets('shows validation errors when submitting empty form', (
