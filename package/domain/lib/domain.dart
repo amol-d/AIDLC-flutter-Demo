@@ -6,6 +6,7 @@ export 'src/entity/user.dart';
 export 'src/navigation/app_navigator.dart';
 export 'src/navigation/app_route_info.dart';
 export 'src/repository/repository.dart';
+export 'src/usecase/app_info/get_app_version_use_case.dart';
 export 'src/usecase/auth/check_login_status_use_case.dart';
 export 'src/usecase/auth/get_current_user_use_case.dart';
 export 'src/usecase/auth/login_use_case.dart';

@@ -9,10 +9,13 @@ import 'package:shared/shared.dart';
 
 class MockLoginUseCase extends Mock implements LoginUseCase {}
 
+class MockGetAppVersionUseCase extends Mock implements GetAppVersionUseCase {}
+
 class MockAppNavigator extends Mock implements AppNavigator {}
 
 void main() {
   late MockLoginUseCase loginUseCase;
+  late MockGetAppVersionUseCase getAppVersionUseCase;
   late MockAppNavigator appNavigator;
 
   const user = User(id: 1, username: 'emilys');
@@ -20,14 +23,43 @@ void main() {
   setUpAll(() {
     registerFallbackValue(const LoginInput(username: '', password: ''));
     registerFallbackValue(const AppRouteInfo.home());
+    registerFallbackValue(const NoInput());
   });
 
   setUp(() {
     loginUseCase = MockLoginUseCase();
+    getAppVersionUseCase = MockGetAppVersionUseCase();
     appNavigator = MockAppNavigator();
   });
 
+  LoginBloc buildBloc() =>
+      LoginBloc(loginUseCase, getAppVersionUseCase, appNavigator);
+
   group('LoginBloc', () {
+    blocTest<LoginBloc, LoginState>(
+      'loads the app version on start',
+      build: () {
+        when(() => getAppVersionUseCase.execute(any())).thenAnswer(
+          (_) async => const GetAppVersionOutput(version: '1.2.3+4'),
+        );
+        return buildBloc();
+      },
+      act: (bloc) => bloc.add(const LoginEvent.started()),
+      expect: () => [const LoginState(appVersion: '1.2.3+4')],
+    );
+
+    blocTest<LoginBloc, LoginState>(
+      'stays silent when the version lookup fails',
+      build: () {
+        when(
+          () => getAppVersionUseCase.execute(any()),
+        ).thenThrow(const UnknownException('no platform info'));
+        return buildBloc();
+      },
+      act: (bloc) => bloc.add(const LoginEvent.started()),
+      expect: () => const <LoginState>[],
+    );
+
     blocTest<LoginBloc, LoginState>(
       'emits loading then navigates home on success',
       build: () {
@@ -35,7 +67,7 @@ void main() {
           () => loginUseCase.execute(any()),
         ).thenAnswer((_) async => const LoginOutput(user: user));
         when(() => appNavigator.replaceAll(any())).thenAnswer((_) async {});
-        return LoginBloc(loginUseCase, appNavigator);
+        return buildBloc();
       },
       act: (bloc) => bloc.add(
         const LoginEvent.submitted(username: 'emilys', password: 'pass'),
@@ -62,7 +94,7 @@ void main() {
             message: 'Invalid credentials',
           ),
         );
-        return LoginBloc(loginUseCase, appNavigator);
+        return buildBloc();
       },
       act: (bloc) => bloc.add(
         const LoginEvent.submitted(username: 'emilys', password: 'wrong'),

@@ -10,4 +10,5 @@ export 'src/repository/source/api/mapper/auth_token_data_mapper.dart';
 export 'src/repository/source/api/mapper/base/base_data_mapper.dart';
 export 'src/repository/source/api/mapper/login_user_data_mapper.dart';
 export 'src/repository/source/api/mapper/user_data_mapper.dart';
+export 'src/repository/source/app_info/app_info_data_source.dart';
 export 'src/repository/source/preference/app_preferences.dart';

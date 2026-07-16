@@ -7,20 +7,25 @@ class MockAppApiService extends Mock implements AppApiService {}
 
 class MockAppPreferences extends Mock implements AppPreferences {}
 
+class MockAppInfoDataSource extends Mock implements AppInfoDataSource {}
+
 void main() {
   late MockAppApiService apiService;
   late MockAppPreferences appPreferences;
+  late MockAppInfoDataSource appInfoDataSource;
   late RepositoryImpl repository;
 
   setUp(() {
     apiService = MockAppApiService();
     appPreferences = MockAppPreferences();
+    appInfoDataSource = MockAppInfoDataSource();
     repository = RepositoryImpl(
       apiService,
       appPreferences,
       const AuthTokenDataMapper(),
       const LoginUserDataMapper(),
       const UserDataMapper(),
+      appInfoDataSource,
     );
   });
 
@@ -103,6 +108,16 @@ void main() {
       await repository.logout();
 
       verify(() => appPreferences.clearTokens()).called(1);
+    });
+  });
+
+  group('app info', () {
+    test('getAppVersion delegates to the data source', () async {
+      when(
+        () => appInfoDataSource.getVersion(),
+      ).thenAnswer((_) async => '1.0.0+1');
+
+      expect(await repository.getAppVersion(), '1.0.0+1');
     });
   });
 

@@ -16,6 +16,7 @@ dependencies:
   get_it: ^7.7.0
   injectable: ^2.4.2
   json_annotation: ^4.9.0
+  package_info_plus: ^8.0.0
   shared:
     path: ../shared
   shared_preferences: ^2.3.2
