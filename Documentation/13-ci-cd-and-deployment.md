@@ -28,8 +28,9 @@ On push to the matching branch (plus manual `workflow_dispatch`):
 - **Web**: `flutter build web --release --dart-define FLAVOR=<env>` in `app/app1`, then
   `FirebaseExtended/action-hosting-deploy` to the env's hosting target (`app1-<env>`).
   `firebase.json` includes the SPA rewrite (`**` -> `/index.html`) required for slugs.
-- **Android**: `flutter build apk --release --dart-define FLAVOR=<env>`, then Firebase
-  App Distribution to the `testers` group with env-tagged release notes.
+- **Android**: `flutter build apk --release --flavor <env> --dart-define FLAVOR=<env>`
+  (per-flavor application id, APK at `.../flutter-apk/app-<env>-release.apk`), then
+  Firebase App Distribution to the `testers` group with env-tagged release notes.
 
 Both jobs first check that `FIREBASE_SERVICE_ACCOUNT` exists and **skip cleanly**
 when Firebase isn't wired yet, keeping the pipeline green out of the box.
@@ -42,7 +43,9 @@ when Firebase isn't wired yet, keeping the pipeline green out of the box.
 | `OPENAI_API_KEY` | claude.yml (env) | Optional; for OpenAI-backed tooling/scripts |
 | `FIREBASE_SERVICE_ACCOUNT` | deploy-*.yml | Service-account JSON |
 | `FIREBASE_PROJECT_ID` | deploy-*.yml | Firebase project id |
-| `FIREBASE_ANDROID_APP_ID` | deploy-*.yml | App Distribution app id (1 app id; env carried in release notes) |
+| `FIREBASE_ANDROID_APP_ID_DEV` | deploy-dev.yml | App Distribution app id for `com.example.app1.dev` |
+| `FIREBASE_ANDROID_APP_ID_PREPROD` | deploy-preprod.yml | App Distribution app id for `com.example.app1.preprod` |
+| `FIREBASE_ANDROID_APP_ID_PROD` | deploy-prod.yml | App Distribution app id for `com.example.app1` |
 
 ## Versioning & rollback
 

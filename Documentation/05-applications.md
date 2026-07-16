@@ -3,7 +3,7 @@
 Two separate applications prove the monorepo supports independent apps sharing packages.
 **Change only the requested app unless behavior clearly belongs in a package.**
 
-## app1 — full demo app (`com.example.app1`)
+## app1 — full demo app (`com.example.app1`, per-flavor suffixes)
 
 - **Screens:** Login (`/login`), Home (`/home`, guarded, initial route)
 - **Auth:** dummyjson login; token persisted via `AppPreferences` (localStorage on web,
@@ -14,11 +14,15 @@ Two separate applications prove the monorepo supports independent apps sharing p
   intent-filter + iOS CFBundleURLTypes; Flutter built-in deeplinking disabled to avoid
   double handling)
 - **Splash:** flutter_native_splash on Android + iOS (brand color, dark-mode aware)
+- **Flavors:** flavorizr-generated native flavors — `com.example.app1.dev` /
+  `com.example.app1.preprod` / `com.example.app1` (prod), each with its own launcher
+  name, installable side by side. See
+  [10-environments-and-flavors.md](./10-environments-and-flavors.md).
 - **Flavor badge:** visible DEV/PREPROD/PROD chip in the app bar
 
-Test a deeplink on Android:
+Test a deeplink on Android (package name matches the installed flavor):
 ```sh
-adb shell am start -a android.intent.action.VIEW -d "aidlc://app1/home" com.example.app1
+adb shell am start -a android.intent.action.VIEW -d "aidlc://app1/home" com.example.app1.dev
 ```
 
 ## app2 — skeleton (`com.example.app2`)

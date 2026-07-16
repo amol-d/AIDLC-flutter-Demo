@@ -6,9 +6,15 @@ whenever you're ready.
 ## 1. Create the project & apps
 
 1. https://console.firebase.google.com → *Add project* (e.g. `aidlc-demo`).
-2. Add an **Android app** with package name `com.example.app1`. Note its **App ID**
-   (`1:...:android:...`) for `FIREBASE_ANDROID_APP_ID`. (No google-services.json is
-   needed for App Distribution-only usage.)
+2. Add **three Android apps** — one per flavor's application id — and note each **App ID**
+   (`1:...:android:...`) for the matching secret. (No google-services.json is needed for
+   App Distribution-only usage.)
+
+   | Package name | Secret |
+   |---|---|
+   | `com.example.app1.dev` | `FIREBASE_ANDROID_APP_ID_DEV` |
+   | `com.example.app1.preprod` | `FIREBASE_ANDROID_APP_ID_PREPROD` |
+   | `com.example.app1` | `FIREBASE_ANDROID_APP_ID_PROD` |
 
 ## 2. Hosting sites (one per environment)
 
@@ -28,8 +34,8 @@ committed there. `firebase.json` already contains the three targets with the SPA
 
 ## 3. App Distribution
 
-Console → App Distribution → *Get started* for the Android app, and create a tester
-group named **testers** (the workflows distribute to it).
+Console → App Distribution → *Get started* for each of the three Android apps, and
+create a tester group named **testers** (the workflows distribute to it).
 
 ## 4. Service account for CI
 
@@ -37,7 +43,8 @@ group named **testers** (the workflows distribute to it).
    a dedicated SA in Google Cloud IAM with roles: **Firebase Hosting Admin** +
    **Firebase App Distribution Admin**.
 2. Save the JSON and add it as the `FIREBASE_SERVICE_ACCOUNT` repo secret (paste the
-   whole JSON). Add `FIREBASE_PROJECT_ID` and `FIREBASE_ANDROID_APP_ID` too.
+   whole JSON). Add `FIREBASE_PROJECT_ID` and the three
+   `FIREBASE_ANDROID_APP_ID_{DEV,PREPROD,PROD}` secrets too.
 3. **Never commit this JSON** — the `.gitignore` blocks `firebase-service-account*.json`
    as a safety net.
 
