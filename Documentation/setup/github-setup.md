@@ -8,8 +8,8 @@ GitHub → repo → Settings → Secrets and variables → Actions → *New repo
 
 | Secret | Required for | Where to get it |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | @claude dev + AI review workflows | https://console.anthropic.com → API Keys |
-| `OPENAI_API_KEY` | optional OpenAI-backed tooling | https://platform.openai.com/api-keys |
+| `OPENAI_API_KEY` | **@codex dev + AI review workflows (the active AI path)** | https://platform.openai.com/api-keys |
+| `ANTHROPIC_API_KEY` | optional @claude workflows (skip cleanly without it) | https://console.anthropic.com → API Keys |
 | `FIREBASE_SERVICE_ACCOUNT` | deploys | see [firebase-setup.md](./firebase-setup.md) |
 | `FIREBASE_PROJECT_ID` | deploys | Firebase console |
 | `FIREBASE_ANDROID_APP_ID_DEV` | APK distribution (com.example.app1.dev) | Firebase console → Android app |
@@ -19,8 +19,8 @@ GitHub → repo → Settings → Secrets and variables → Actions → *New repo
 Equivalent CLI (after `gh auth login`):
 
 ```sh
-gh secret set ANTHROPIC_API_KEY --body "<key>"
 gh secret set OPENAI_API_KEY --body "<key>"
+gh secret set ANTHROPIC_API_KEY --body "<key>"   # optional
 gh secret set FIREBASE_SERVICE_ACCOUNT < service-account.json
 gh secret set FIREBASE_PROJECT_ID --body "<project-id>"
 gh secret set FIREBASE_ANDROID_APP_ID_DEV --body "1:1234567890:android:abc123"
@@ -28,12 +28,13 @@ gh secret set FIREBASE_ANDROID_APP_ID_PREPROD --body "1:1234567890:android:def45
 gh secret set FIREBASE_ANDROID_APP_ID_PROD --body "1:1234567890:android:ghi789"
 ```
 
-## 2. Install the Claude GitHub App
+## 2. (Optional) Install the Claude GitHub App
 
-Either run `/install-github-app` from a local Claude Code session in this repo, or
-install manually: https://github.com/apps/claude → *Install* → select `AIDLC-Demo`.
-The `@claude` workflows only respond once the app is installed AND
-`ANTHROPIC_API_KEY` is set.
+Only needed for the optional `@claude` path. Either run `/install-github-app` from a
+local Claude Code session in this repo, or install manually:
+https://github.com/apps/claude → *Install* → select `AIDLC-Demo`. The `@claude`
+workflows only respond once the app is installed AND `ANTHROPIC_API_KEY` is set.
+The `@codex` path needs no app install — just the `OPENAI_API_KEY` secret.
 
 ## 3. Branch protection
 
@@ -60,6 +61,8 @@ done
 
 ## 4. Smoke test
 
-Open an issue containing: `@claude add a version label under the login button`.
-The `claude.yml` workflow should start within a minute, push a `feature/*` branch, and
-open a PR into `dev` with CI + AI review running on it.
+Open an issue containing: `@codex add a version label under the login button`.
+The `codex.yml` workflow should start within a minute, push a
+`feature/codex-issue-<N>` branch, open a PR into `dev`, and comment the PR link on the
+issue. (Note: CI on that PR needs a manual re-run unless you configure a PAT — see
+Documentation/12-aidlc-automation.md.)

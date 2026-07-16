@@ -1,5 +1,7 @@
 # Automated AI review on every PR, applying .claude/skills/code-review.
-# Requires: ANTHROPIC_API_KEY secret + the Claude GitHub App installed.
+# OPTIONAL: requires ANTHROPIC_API_KEY secret + the Claude GitHub App installed;
+# skips cleanly when the key is absent (the active review path is
+# openai-code-review.yml).
 name: Claude Code Review
 
 on:
@@ -7,8 +9,18 @@ on:
     types: [opened, synchronize, ready_for_review]
 
 jobs:
-  review:
+  check:
     if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - id: check
+        run: echo "run=${{ secrets.ANTHROPIC_API_KEY != '' }}" >> "$GITHUB_OUTPUT"
+
+  review:
+    needs: check
+    if: needs.check.outputs.run == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read

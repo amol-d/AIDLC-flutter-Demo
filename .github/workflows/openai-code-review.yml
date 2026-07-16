@@ -1,0 +1,70 @@
+# Automated AI review on every PR using the OpenAI Codex CLI, applying the
+# checklist in .claude/skills/code-review/SKILL.md.
+# Requires: OPENAI_API_KEY secret. Skips cleanly when it is absent.
+name: OpenAI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+jobs:
+  check:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - id: check
+        run: echo "run=${{ secrets.OPENAI_API_KEY != '' }}" >> "$GITHUB_OUTPUT"
+
+  review:
+    needs: check
+    if: needs.check.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Codex CLI
+        run: npm install -g @openai/codex
+
+      - name: Fetch the PR diff
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr diff ${{ github.event.pull_request.number }} > "$RUNNER_TEMP/pr.diff"
+
+      - name: Review with Codex
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          codex exec --dangerously-bypass-approvals-and-sandbox \
+            --output-last-message "$RUNNER_TEMP/review.md" \
+            "Review the pull request diff in $RUNNER_TEMP/pr.diff against this
+             repository's rules. Apply .claude/skills/code-review/SKILL.md
+             strictly, in order: layer violations (domain importing data,
+             blocs bypassing use cases, cross-app imports, router use inside
+             blocs), data correctness (nullable wire fields, mapper defaults,
+             200-with-error handling), missing tests (DTO wire-shape,
+             use-case forwarding, bloc success+failure), conventions (l10n in
+             both ARB files, constants, barrel exports, naming), and safety
+             (secrets, logging of bodies/credentials). Read the referenced
+             source files in the checkout to verify claims - do not trust the
+             diff alone. Output a concise markdown review: verdict first
+             (approve / request changes), then findings most-severe first
+             with file:line references. Skip style nits the formatter
+             enforces."
+
+      - name: Post the review
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "## 🤖 OpenAI Codex review"
+            echo ""
+            cat "$RUNNER_TEMP/review.md"
+          } > "$RUNNER_TEMP/comment.md"
+          gh pr comment ${{ github.event.pull_request.number }} --body-file "$RUNNER_TEMP/comment.md"

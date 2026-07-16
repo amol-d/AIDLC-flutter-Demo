@@ -39,8 +39,8 @@ when Firebase isn't wired yet, keeping the pipeline green out of the box.
 
 | Secret | Used by | Notes |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | claude.yml, claude-code-review.yml | Enables the AI workflows |
-| `OPENAI_API_KEY` | claude.yml (env) | Optional; for OpenAI-backed tooling/scripts |
+| `OPENAI_API_KEY` | codex.yml, openai-code-review.yml | Enables the active AI workflows (@codex) |
+| `ANTHROPIC_API_KEY` | claude.yml, claude-code-review.yml | Optional @claude path; workflows skip without it |
 | `FIREBASE_SERVICE_ACCOUNT` | deploy-*.yml | Service-account JSON |
 | `FIREBASE_PROJECT_ID` | deploy-*.yml | Firebase project id |
 | `FIREBASE_ANDROID_APP_ID_DEV` | deploy-dev.yml | App Distribution app id for `com.example.app1.dev` |
