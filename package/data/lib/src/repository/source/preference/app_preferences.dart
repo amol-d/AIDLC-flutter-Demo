@@ -33,4 +33,14 @@ class AppPreferences {
     await _sharedPreferences.remove(StringConstants.accessTokenKey);
     await _sharedPreferences.remove(StringConstants.refreshTokenKey);
   }
+
+  String get languageCode =>
+      _sharedPreferences.getString(StringConstants.languageCodeKey) ?? 'en';
+
+  Future<void> saveLanguageCode(String languageCode) async {
+    await _sharedPreferences.setString(
+      StringConstants.languageCodeKey,
+      languageCode,
+    );
+  }
 }
