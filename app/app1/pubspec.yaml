@@ -33,6 +33,7 @@ dev_dependencies:
   auto_route_generator: ^9.0.0
   bloc_test: ^9.1.7
   build_runner: ^2.4.11
+  flutter_flavorizr: ^2.2.3
   flutter_lints: ^5.0.0
   flutter_native_splash: ^2.4.1
   freezed: ^2.5.7
@@ -51,3 +52,39 @@ flutter_native_splash:
     color: "#0D47A1"
     color_dark: "#0D1B2A"
   web: false
+
+# Native flavors (Android productFlavors + iOS schemes/xcconfigs).
+# Regenerate after changes with: dart run flutter_flavorizr
+# Only native processors run - the Dart entrypoint stays lib/main.dart and the
+# runtime Flavor still comes from EnvConstants (dart-define/appFlavor).
+flavorizr:
+  instructions:
+    - android:androidManifest
+    - android:flavorizrGradle
+    - android:buildGradle
+    - ios:xcconfig
+    - ios:buildTargets
+    - ios:schema
+    - ios:plist
+  flavors:
+    dev:
+      app:
+        name: "App1 DEV"
+      android:
+        applicationId: "com.example.app1.dev"
+      ios:
+        bundleId: "com.example.app1.dev"
+    preprod:
+      app:
+        name: "App1 PREPROD"
+      android:
+        applicationId: "com.example.app1.preprod"
+      ios:
+        bundleId: "com.example.app1.preprod"
+    prod:
+      app:
+        name: "App1"
+      android:
+        applicationId: "com.example.app1"
+      ios:
+        bundleId: "com.example.app1"

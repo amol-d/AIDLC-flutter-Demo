@@ -25,7 +25,11 @@ dart run melos run l10n         # regenerate S class from ARB files
 dart run melos run force_build_shared|force_build_domain|force_build_data|force_build_app
 ```
 
-Run an app: `cd app/app1 && fvm flutter run -d chrome --dart-define FLAVOR=dev`
+Run an app: `cd app/app1 && fvm flutter run -d chrome --dart-define FLAVOR=dev` (web).
+Android/iOS use native flavors: `fvm flutter run --flavor dev` (app ids:
+dev `com.example.app1.dev`, preprod `com.example.app1.preprod`, prod `com.example.app1`;
+regenerate native config with `dart run flutter_flavorizr -f` after editing the
+`flavorizr:` section in `app/app1/pubspec.yaml`).
 
 **Generated files (`*.g.dart`, `*.freezed.dart`, `*.gr.dart`, `*.config.dart`, l10n output)
 are NOT committed.** Run `dart run melos run gen` after cloning and after changing any

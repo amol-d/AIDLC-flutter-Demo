@@ -52,6 +52,6 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: ./.github/actions/flutter-setup
-      - name: Build app1 (debug APK)
+      - name: Build app1 (debug APK, dev flavor)
         working-directory: app/app1
-        run: flutter build apk --debug --dart-define FLAVOR=dev
+        run: flutter build apk --debug --flavor dev --dart-define FLAVOR=dev
