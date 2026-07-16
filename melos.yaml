@@ -1,0 +1,66 @@
+name: aidlc_demo
+
+sdkPath: .fvm/flutter_sdk
+
+packages:
+  - app/*
+  - package/*
+
+command:
+  bootstrap:
+    runPubGetInParallel: true
+
+scripts:
+  analyze:
+    description: Analyze all packages (fatal infos).
+    run: melos exec -c 1 -- "flutter analyze --fatal-infos"
+
+  format:
+    description: Format all packages (generated files are gitignored anyway).
+    run: melos exec -c 1 -- "dart format ."
+
+  format:check:
+    description: Verify formatting without writing changes.
+    run: melos exec -c 1 -- "dart format --output=none --set-exit-if-changed ."
+
+  l10n:
+    description: Generate localization (S class) in package/shared.
+    run: melos exec --scope="shared" -- "dart run intl_utils:generate"
+
+  force_build_shared:
+    description: Run build_runner for package/shared.
+    run: melos exec --scope="shared" -- "dart run build_runner build --delete-conflicting-outputs"
+
+  force_build_domain:
+    description: Run build_runner for package/domain.
+    run: melos exec --scope="domain" -- "dart run build_runner build --delete-conflicting-outputs"
+
+  force_build_data:
+    description: Run build_runner for package/data.
+    run: melos exec --scope="data" -- "dart run build_runner build --delete-conflicting-outputs"
+
+  force_build_app:
+    description: Run build_runner for all apps.
+    run: melos exec -c 1 --scope="app1" --scope="app2" --depends-on="build_runner" -- "dart run build_runner build --delete-conflicting-outputs"
+
+  force_build_all:
+    description: Run codegen for every package in dependency order (shared -> domain -> data -> apps).
+    run: |
+      melos run force_build_shared && \
+      melos run force_build_domain && \
+      melos run force_build_data && \
+      melos run force_build_app
+
+  gen:
+    description: Full generation pass - localization plus all build_runner outputs.
+    run: |
+      melos run l10n && \
+      melos run force_build_all
+
+  test:unit:
+    description: Run unit/widget tests in every package that has a test directory.
+    run: melos exec -c 1 --dir-exists="test" --depends-on="flutter_test" -- "flutter test"
+
+  test:
+    description: Alias for test:unit.
+    run: melos run test:unit

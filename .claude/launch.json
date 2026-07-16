@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "app1-web",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "cd app/app1 && ../../.fvm/flutter_sdk/bin/flutter run -d web-server --web-port 8087 --dart-define FLAVOR=dev"
+      ],
+      "port": 8087
+    },
+    {
+      "name": "app2-web",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "cd app/app2 && ../../.fvm/flutter_sdk/bin/flutter run -d web-server --web-port 8088 --dart-define FLAVOR=dev"
+      ],
+      "port": 8088
+    }
+  ]
+}
