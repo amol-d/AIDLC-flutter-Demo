@@ -12,5 +12,6 @@ class AppRouteInfoMapper {
   PageRouteInfo map(AppRouteInfo routeInfo) => routeInfo.when(
     login: () => const LoginRoute(),
     home: () => const HomeRoute(),
+    settings: () => const SettingsRoute(),
   );
 }

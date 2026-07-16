@@ -13,5 +13,9 @@
   "retry": "पुनः प्रयास करें",
   "invalidCredentials": "अमान्य उपयोगकर्ता नाम या पासवर्ड",
   "demoCredentialsHint": "डेमो क्रेडेंशियल: emilys / emilyspass",
-  "environment": "वातावरण"
+  "environment": "वातावरण",
+  "settings": "सेटिंग्स",
+  "language": "भाषा",
+  "english": "English",
+  "hindi": "हिन्दी"
 }

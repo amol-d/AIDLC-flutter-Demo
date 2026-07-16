@@ -105,4 +105,22 @@ void main() {
       verify(() => appPreferences.clearTokens()).called(1);
     });
   });
+
+  group('language', () {
+    test('languageCode delegates to preferences', () {
+      when(() => appPreferences.languageCode).thenReturn('hi');
+
+      expect(repository.languageCode, 'hi');
+    });
+
+    test('saveLanguageCode persists via preferences', () async {
+      when(
+        () => appPreferences.saveLanguageCode(any()),
+      ).thenAnswer((_) async {});
+
+      await repository.saveLanguageCode('hi');
+
+      verify(() => appPreferences.saveLanguageCode('hi')).called(1);
+    });
+  });
 }
