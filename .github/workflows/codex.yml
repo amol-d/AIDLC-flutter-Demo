@@ -1,0 +1,106 @@
+# AIDLC core (OpenAI path): mention @codex in an issue (or issue comment) and the
+# OpenAI Codex CLI implements the request following AGENTS.md and
+# .claude/skills/feature-development, then a deterministic step pushes a
+# feature branch and opens a PR into dev.
+# Requires: OPENAI_API_KEY secret. Skips cleanly when it is absent.
+#
+# Note: PRs opened with the default GITHUB_TOKEN do not auto-trigger CI
+# (GitHub anti-recursion rule). Re-run CI from the PR page, or replace the
+# token with a PAT/App token to lift the limitation.
+name: Codex
+
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  check:
+    if: |
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@codex') || contains(github.event.issue.title, '@codex'))) ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@codex'))
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - id: check
+        run: echo "run=${{ secrets.OPENAI_API_KEY != '' }}" >> "$GITHUB_OUTPUT"
+
+  implement:
+    needs: check
+    if: needs.check.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      # Toolchain first, so the agent can run the repo verification loop.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: ./.github/actions/flutter-setup
+
+      - name: Install Codex CLI
+        run: npm install -g @openai/codex
+
+      # Env-var indirection keeps issue text out of shell interpolation.
+      - name: Write the request to a file
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          {
+            printf '# Issue title\n%s\n\n' "$ISSUE_TITLE"
+            printf '# Issue body\n%s\n\n' "$ISSUE_BODY"
+            if [ -n "$COMMENT_BODY" ]; then
+              printf '# Triggering comment\n%s\n' "$COMMENT_BODY"
+            fi
+          } > "$RUNNER_TEMP/request.md"
+
+      - name: Run Codex
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        # CI runners have no interactive approvals and the workspace is
+        # disposable, so the sandbox bypass is appropriate here.
+        run: |
+          codex exec --dangerously-bypass-approvals-and-sandbox \
+            "You are implementing a feature request in this Flutter monorepo.
+             The request is in $RUNNER_TEMP/request.md - read it first.
+             Follow AGENTS.md and .claude/skills/feature-development/SKILL.md
+             exactly: implement through all layers, add the required tests,
+             and run the verification loop until green:
+             dart run melos run gen && dart run melos run format &&
+             dart run melos run analyze && dart run melos run test:unit.
+             Edit files in the working tree only - do NOT create branches,
+             commit, or push; the workflow handles git."
+
+      - name: Push feature branch and open PR into dev
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            gh issue comment "$ISSUE_NUMBER" --body "Codex run finished without file changes - see the workflow log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            exit 0
+          fi
+          BRANCH="feature/codex-issue-$ISSUE_NUMBER"
+          git config user.name "codex-bot"
+          git config user.email "codex-bot@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add -A
+          git commit -m "feat: $ISSUE_TITLE (via Codex, closes #$ISSUE_NUMBER)"
+          git push -u origin "$BRANCH"
+          PR_URL=$(gh pr create --base dev --head "$BRANCH" \
+            --title "feat: $ISSUE_TITLE" \
+            --body "Implements #$ISSUE_NUMBER via the Codex AIDLC workflow. Review checklist: .claude/skills/code-review/SKILL.md. Closes #$ISSUE_NUMBER")
+          gh issue comment "$ISSUE_NUMBER" --body "Opened PR: $PR_URL"

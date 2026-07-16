@@ -12,14 +12,14 @@ native splash, deeplinks, web slugs, and tests at every layer.
 
 ```
   PRD / issue / JIRA / Slack / prompt
-                │  @claude mention
+                │  @codex mention (OpenAI; @claude optional)
                 ▼
-   ┌─ claude.yml ──────────────┐     AI implements the feature following
-   │  plan → code → test → PR  │     .claude/skills/feature-development
+   ┌─ codex.yml ───────────────┐     AI implements the feature following
+   │  plan → code → test → PR  │     AGENTS.md + .claude/skills/feature-development
    └────────────┬──────────────┘
                 ▼
-   ci.yml (analyze • tests • builds)  +  claude-code-review.yml (AI review)
-                │ merge
+   ci.yml (analyze • tests • builds)  +  openai-code-review.yml (AI review)
+                │ merge (human-approved at every stage)
                 ▼
    dev ──PR──► preprod ──PR──► main
     │             │              │
@@ -43,12 +43,13 @@ through the full use-case → repository → DTO → mapper pipeline).
 
 ## Try the AI lifecycle
 
-1. Add the `ANTHROPIC_API_KEY` secret and install the Claude GitHub App —
-   5 minutes, steps in [Documentation/setup/github-setup.md](Documentation/setup/github-setup.md).
+1. Add the `OPENAI_API_KEY` secret — 2 minutes, steps in
+   [Documentation/setup/github-setup.md](Documentation/setup/github-setup.md).
+   (`@claude` via `ANTHROPIC_API_KEY` is an optional second backend.)
 2. Open an issue:
-   > @claude Add a Settings screen with a language toggle (en/hi), reachable from Home.
-3. Watch the agent open a PR, CI verify it, the AI reviewer comment on it — then merge to
-   `dev` and see it deployed.
+   > @codex Add a version label under the login button. Follow the feature-development skill.
+3. Watch the agent open a PR into `dev`, the AI reviewer comment on it — then approve and
+   merge to see it deployed.
 
 ## Repository map
 
@@ -60,7 +61,7 @@ through the full use-case → repository → DTO → mapper pipeline).
 | `package/data` | DTOs, mappers, Dio clients, `RepositoryImpl`, preferences |
 | `package/shared` | Constants, exceptions, `Result`, l10n, `Flavor` |
 | `.claude/skills/` | Agent skills: feature-development, code-review, deploy, jira-ticket |
-| `.github/workflows/` | CI, @claude dev agent, AI review, per-env deploys |
+| `.github/workflows/` | CI, @codex dev agent (OpenAI), AI review, per-env deploys (+ optional @claude) |
 | `Documentation/` | Full docs — start at [Documentation/README.md](Documentation/README.md) |
 
 ## Branching

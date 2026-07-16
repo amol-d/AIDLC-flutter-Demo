@@ -2,11 +2,19 @@
 
 The AI-driven development lifecycle this repo demonstrates, end to end.
 
+Two interchangeable AI backends drive the lifecycle; each activates only when its secret
+exists, so the repo is never red because of a missing key:
+
+| Backend | Trigger | Secret | Workflows |
+|---|---|---|---|
+| **OpenAI Codex** (active) | `@codex` | `OPENAI_API_KEY` | `codex.yml`, `openai-code-review.yml` |
+| Claude Code (optional) | `@claude` | `ANTHROPIC_API_KEY` + Claude GitHub App | `claude.yml`, `claude-code-review.yml` |
+
 ## Inputs — how work arrives
 
 1. **GitHub issue / PRD**: open an issue (the `Feature request` template is shaped like a
-   mini-PRD) and mention `@claude` in the body or a comment.
-2. **PR comment**: mention `@claude` on any PR to request changes or fixes.
+   mini-PRD) and mention `@codex` (or `@claude`) in the body or a comment.
+2. **PR comment**: mention the agent on any PR to request changes or fixes.
 3. **JIRA ticket**: with the JIRA template activated, tickets sync to issues (or paste
    the ticket text into an issue) — the `jira-ticket` skill governs how the agent turns a
    ticket into a branch/PR.
@@ -17,24 +25,35 @@ The AI-driven development lifecycle this repo demonstrates, end to end.
 ## The loop
 
 ```
-requirement (@claude mention)
-   -> claude.yml: agent plans, implements per feature-development skill,
-      runs melos gen/analyze/test, pushes feature branch, opens PR into dev
+requirement (@codex mention in an issue)
+   -> codex.yml: Codex CLI implements per AGENTS.md + feature-development skill,
+      runs melos gen/analyze/test; the workflow pushes feature/codex-issue-<N>
+      and opens a PR into dev, then comments the PR link on the issue
    -> ci.yml: analyze + tests + web/android builds
-   -> claude-code-review.yml: AI review against code-review skill checklist
+   -> openai-code-review.yml: AI review against the code-review skill checklist
    -> human merges PR into dev            -> deploy-dev.yml     (DEV)
    -> promotion PR dev -> preprod          -> deploy-preprod.yml (PREPROD)
    -> promotion PR preprod -> main         -> deploy-prod.yml    (PROD)
 ```
 
+Per the promotion gate (see the deploy skill), each promotion PR requires explicit
+user approval — merges are always human.
+
 ## Workflows
 
 | File | Trigger | Purpose |
 |---|---|---|
-| `.github/workflows/claude.yml` | `@claude` in issues/PR comments/reviews | Interactive agent: implements features, answers questions, fixes PRs. Flutter + melos are installed first so the agent can run the verification loop. |
-| `.github/workflows/claude-code-review.yml` | PR opened/updated | Automated review; posts findings as a PR review using the code-review skill rules. |
+| `.github/workflows/codex.yml` | `@codex` in issues/issue comments | **Active dev agent** (OpenAI): implements the request with the Codex CLI (which reads AGENTS.md natively), then pushes a branch + opens a PR into dev. Flutter + melos installed first so it can run the verification loop. |
+| `.github/workflows/openai-code-review.yml` | PR opened/updated | **Active reviewer** (OpenAI): Codex reviews the diff per the code-review skill and posts a PR comment. |
+| `.github/workflows/claude.yml` | `@claude` mentions | Optional Anthropic dev agent; skips without `ANTHROPIC_API_KEY`. |
+| `.github/workflows/claude-code-review.yml` | PR opened/updated | Optional Anthropic reviewer; skips without `ANTHROPIC_API_KEY`. |
 | `.github/workflows/ci.yml` | PRs + pushes to dev/preprod/main | analyze, test:unit, web builds (both apps), Android debug build on PRs into preprod/main. |
 | `.github/workflows/deploy-*.yml` | push to dev/preprod/main | Firebase Hosting (web) + App Distribution (APK). |
+
+**Known limitation:** PRs opened by `codex.yml` use the default `GITHUB_TOKEN`, and
+GitHub does not auto-trigger CI on such PRs (anti-recursion). Re-run CI from the PR's
+Checks tab, or store a fine-grained PAT as `GH_PAT` and use it in the PR-creation step
+to lift this.
 
 ## Agent knowledge
 
@@ -46,16 +65,18 @@ requirement (@claude mention)
 
 ## Activation
 
-Requires repo secrets (`ANTHROPIC_API_KEY`, optionally `OPENAI_API_KEY`) and the Claude
-GitHub App — see [setup/github-setup.md](./setup/github-setup.md). Deploys additionally
-need Firebase secrets — see [setup/firebase-setup.md](./setup/firebase-setup.md).
-JIRA/Slack/Figma are inert templates in `.github/workflow-templates/` — see
+Requires the `OPENAI_API_KEY` repo secret (Anthropic path additionally needs
+`ANTHROPIC_API_KEY` + the Claude GitHub App) — see
+[setup/github-setup.md](./setup/github-setup.md). Deploys additionally need Firebase
+secrets — see [setup/firebase-setup.md](./setup/firebase-setup.md). JIRA/Slack/Figma are
+inert templates in `.github/workflow-templates/` — see
 [setup/integrations-jira-slack-figma.md](./setup/integrations-jira-slack-figma.md).
 
 ## Try it
 
-1. Wire the secrets + install the Claude GitHub App.
-2. Open an issue: *"@claude add a Settings screen with a language toggle (en/hi),
-   reachable from Home. Follow the feature-development skill."*
-3. Watch the agent open a PR, CI go green, the review bot comment, then merge to `dev`
-   and check the DEV site.
+1. Add the `OPENAI_API_KEY` secret.
+2. Open an issue: *"@codex add a version label under the login button. Follow the
+   feature-development skill."*
+3. Watch the workflow push `feature/codex-issue-<N>`, open a PR into dev, and comment
+   the link on the issue; review it (the AI reviewer comments too), then merge to `dev`
+   and check the DEV deploy.

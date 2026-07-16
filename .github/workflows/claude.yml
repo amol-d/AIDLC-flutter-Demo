@@ -1,6 +1,7 @@
-# AIDLC core: mention @claude in an issue or PR and the agent plans, implements,
-# tests, and opens/updates a PR — following CLAUDE.md and .claude/skills/*.
-# Requires: ANTHROPIC_API_KEY secret + the Claude GitHub App installed.
+# AIDLC (Anthropic path): mention @claude in an issue or PR and the agent plans,
+# implements, tests, and opens/updates a PR — following CLAUDE.md and .claude/skills/*.
+# OPTIONAL: requires ANTHROPIC_API_KEY secret + the Claude GitHub App installed;
+# skips cleanly when the key is absent (the active dev path is codex.yml / @codex).
 name: Claude
 
 on:
@@ -14,12 +15,22 @@ on:
     types: [submitted]
 
 jobs:
-  claude:
+  check:
     if: |
       (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
       (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - id: check
+        run: echo "run=${{ secrets.ANTHROPIC_API_KEY != '' }}" >> "$GITHUB_OUTPUT"
+
+  claude:
+    needs: check
+    if: needs.check.outputs.run == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
