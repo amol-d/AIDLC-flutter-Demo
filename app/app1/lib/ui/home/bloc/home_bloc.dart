@@ -12,6 +12,7 @@ class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
     : super(const HomeState()) {
     on<HomeStarted>(_onStarted);
     on<HomeLogoutPressed>(_onLogoutPressed);
+    on<HomeSettingsPressed>(_onSettingsPressed);
   }
 
   final GetCurrentUserUseCase _getCurrentUserUseCase;
@@ -45,5 +46,12 @@ class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
       await _logoutUseCase.execute(const NoInput());
       await _appNavigator.replaceAll(const AppRouteInfo.login());
     },
+  );
+
+  Future<void> _onSettingsPressed(
+    HomeSettingsPressed event,
+    Emitter<HomeState> emit,
+  ) => runBlocCatching(
+    action: () => _appNavigator.push(const AppRouteInfo.settings()),
   );
 }

@@ -29,6 +29,7 @@ class DeepLinkHelper {
   AppRouteInfo? mapUriToRoute(Uri uri) => switch (uri.path) {
     '/home' => const AppRouteInfo.home(),
     '/login' => const AppRouteInfo.login(),
+    '/settings' => const AppRouteInfo.settings(),
     _ => null,
   };
 

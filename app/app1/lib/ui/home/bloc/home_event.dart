@@ -6,4 +6,5 @@ part 'home_event.freezed.dart';
 class HomeEvent with _$HomeEvent {
   const factory HomeEvent.started() = HomeStarted;
   const factory HomeEvent.logoutPressed() = HomeLogoutPressed;
+  const factory HomeEvent.settingsPressed() = HomeSettingsPressed;
 }

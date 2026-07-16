@@ -15,4 +15,10 @@ abstract class Repository {
 
   /// Clears any persisted authentication state.
   Future<void> logout();
+
+  /// Persisted UI language code ('en' when none was chosen yet).
+  String get languageCode;
+
+  /// Persists the chosen UI language code.
+  Future<void> saveLanguageCode(String languageCode);
 }

@@ -13,3 +13,5 @@ export 'src/usecase/auth/logout_use_case.dart';
 export 'src/usecase/base/base_future_use_case.dart';
 export 'src/usecase/base/base_sync_use_case.dart';
 export 'src/usecase/base/no_input.dart';
+export 'src/usecase/settings/get_language_use_case.dart';
+export 'src/usecase/settings/set_language_use_case.dart';

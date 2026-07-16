@@ -57,4 +57,11 @@ class RepositoryImpl implements Repository {
 
   @override
   Future<void> logout() => _appPreferences.clearTokens();
+
+  @override
+  String get languageCode => _appPreferences.languageCode;
+
+  @override
+  Future<void> saveLanguageCode(String languageCode) =>
+      _appPreferences.saveLanguageCode(languageCode);
 }

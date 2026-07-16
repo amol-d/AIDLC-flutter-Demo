@@ -13,5 +13,9 @@
   "retry": "Retry",
   "invalidCredentials": "Invalid username or password",
   "demoCredentialsHint": "Demo credentials: emilys / emilyspass",
-  "environment": "Environment"
+  "environment": "Environment",
+  "settings": "Settings",
+  "language": "Language",
+  "english": "English",
+  "hindi": "हिन्दी"
 }
