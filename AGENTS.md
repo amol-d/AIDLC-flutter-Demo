@@ -60,3 +60,7 @@ Copy the auth feature end-to-end as the reference implementation.
 Branch from `dev` as `feature/<slug>`; PR back into `dev`. Promotions: `dev -> preprod ->
 main`. Merges deploy automatically (Firebase Hosting + App Distribution). Never commit
 secrets or generated files.
+
+**Promotion gate:** after committing and testing on the feature branch, ask the user
+before opening the PR to `dev`. Ask again (separately) before each promotion PR
+(`dev -> preprod`, `preprod -> main`). Never chain promotions on a single approval.
