@@ -35,6 +35,13 @@ class _HomeView extends StatelessWidget {
         actions: [
           const Center(child: FlavorBadge()),
           IconButton(
+            key: const Key('home_settings_button'),
+            tooltip: s.settings,
+            icon: const Icon(Icons.settings),
+            onPressed: () =>
+                context.read<HomeBloc>().add(const HomeEvent.settingsPressed()),
+          ),
+          IconButton(
             key: const Key('home_logout_button'),
             tooltip: s.logout,
             icon: const Icon(Icons.logout),

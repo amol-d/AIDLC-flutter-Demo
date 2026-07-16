@@ -22,6 +22,11 @@ class AppRouter extends RootStackRouter {
       initial: true,
       guards: [_authGuard],
     ),
+    AutoRoute(
+      page: SettingsRoute.page,
+      path: '/settings',
+      guards: [_authGuard],
+    ),
     RedirectRoute(path: '*', redirectTo: '/home'),
   ];
 }
