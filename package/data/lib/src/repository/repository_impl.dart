@@ -7,6 +7,7 @@ import 'source/api/app_api_service.dart';
 import 'source/api/mapper/auth_token_data_mapper.dart';
 import 'source/api/mapper/login_user_data_mapper.dart';
 import 'source/api/mapper/user_data_mapper.dart';
+import 'source/app_info/app_info_data_source.dart';
 import 'source/preference/app_preferences.dart';
 
 @LazySingleton(as: Repository)
@@ -17,6 +18,7 @@ class RepositoryImpl implements Repository {
     this._authTokenDataMapper,
     this._loginUserDataMapper,
     this._userDataMapper,
+    this._appInfoDataSource,
   );
 
   final AppApiService _apiService;
@@ -24,6 +26,7 @@ class RepositoryImpl implements Repository {
   final AuthTokenDataMapper _authTokenDataMapper;
   final LoginUserDataMapper _loginUserDataMapper;
   final UserDataMapper _userDataMapper;
+  final AppInfoDataSource _appInfoDataSource;
 
   @override
   Future<User> login({
@@ -64,4 +67,7 @@ class RepositoryImpl implements Repository {
   @override
   Future<void> saveLanguageCode(String languageCode) =>
       _appPreferences.saveLanguageCode(languageCode);
+
+  @override
+  Future<String> getAppVersion() => _appInfoDataSource.getVersion();
 }

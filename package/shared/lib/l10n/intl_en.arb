@@ -14,6 +14,14 @@
   "invalidCredentials": "Invalid username or password",
   "demoCredentialsHint": "Demo credentials: emilys / emilyspass",
   "environment": "Environment",
+  "versionLabel": "Version {version}",
+  "@versionLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "settings": "Settings",
   "language": "Language",
   "english": "English",

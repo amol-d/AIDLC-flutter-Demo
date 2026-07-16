@@ -21,4 +21,7 @@ abstract class Repository {
 
   /// Persists the chosen UI language code.
   Future<void> saveLanguageCode(String languageCode);
+
+  /// The installed app version, e.g. `1.0.0+1`.
+  Future<String> getAppVersion();
 }
