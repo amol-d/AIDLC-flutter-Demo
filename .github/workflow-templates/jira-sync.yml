@@ -1,0 +1,59 @@
+# TEMPLATE (inert until copied to .github/workflows/).
+#
+# JIRA integration: creates a JIRA issue for every GitHub issue labeled `jira`,
+# and comments the JIRA key back on the GitHub issue.
+#
+# Activate:
+#   1. cp .github/workflow-templates/jira-sync.yml .github/workflows/jira-sync.yml
+#   2. Add secrets: JIRA_BASE_URL, JIRA_USER_EMAIL, JIRA_API_TOKEN
+#      (Atlassian account -> Security -> Create API token)
+#   3. Adjust `project` and `issuetype` below to your JIRA project.
+#
+# Reverse direction (JIRA -> GitHub): create a JIRA Automation rule that sends a
+# webhook to POST /repos/amol-d/AIDLC-Demo/dispatches with
+# {"event_type":"jira-ticket","client_payload":{"key":"...","summary":"...","description":"..."}}
+# and add a `repository_dispatch: types: [jira-ticket]` job that opens a GitHub
+# issue mentioning @claude with the ticket body — the agent takes it from there
+# (see .claude/skills/jira-ticket).
+name: JIRA Sync
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  create-jira-issue:
+    if: github.event.label.name == 'jira'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: JIRA login
+        uses: atlassian/gajira-login@v3
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+
+      - name: Create JIRA issue
+        id: create
+        uses: atlassian/gajira-create@v3
+        with:
+          project: AIDLC
+          issuetype: Task
+          summary: '[GH-${{ github.event.issue.number }}] ${{ github.event.issue.title }}'
+          description: |
+            ${{ github.event.issue.body }}
+
+            GitHub issue: ${{ github.event.issue.html_url }}
+
+      - name: Comment JIRA key on the GitHub issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `Linked JIRA ticket: ${{ steps.create.outputs.issue }}`
+            });

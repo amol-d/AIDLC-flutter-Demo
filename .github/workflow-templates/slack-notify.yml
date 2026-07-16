@@ -1,0 +1,44 @@
+# TEMPLATE (inert until copied to .github/workflows/).
+#
+# Slack integration: posts the result of every deploy workflow to a channel.
+#
+# Activate:
+#   1. cp .github/workflow-templates/slack-notify.yml .github/workflows/slack-notify.yml
+#   2. Create a Slack app -> Incoming Webhooks -> add webhook to your channel
+#   3. Add secret: SLACK_WEBHOOK_URL
+#
+# Inbound (Slack -> AIDLC), optional: add a Slack slash command whose request URL
+# hits a small relay (Cloudflare Worker / Lambda) that calls
+# POST /repos/amol-d/AIDLC-Demo/dispatches with event_type "slack-command" and the
+# command text; a `repository_dispatch` job can then open a GitHub issue mentioning
+# @claude — turning a Slack message into an implemented feature.
+name: Slack Notify
+
+on:
+  workflow_run:
+    workflows: ["Deploy DEV", "Deploy PREPROD", "Deploy PROD"]
+    types: [completed]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post deploy result to Slack
+        uses: slackapi/slack-github-action@v1.27.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+        with:
+          payload: |
+            {
+              "text": "${{ github.event.workflow_run.name }}: ${{ github.event.workflow_run.conclusion }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*${{ github.event.workflow_run.name }}* — `${{ github.event.workflow_run.conclusion }}`\nBranch: `${{ github.event.workflow_run.head_branch }}`\nCommit: `${{ github.event.workflow_run.head_sha }}`\n<${{ github.event.workflow_run.html_url }}|Open run>"
+                  }
+                }
+              ]
+            }

@@ -1,0 +1,22 @@
+{
+  "hosting": [
+    {
+      "target": "app1-dev",
+      "public": "app/app1/build/web",
+      "ignore": ["firebase.json", "**/.*"],
+      "rewrites": [{ "source": "**", "destination": "/index.html" }]
+    },
+    {
+      "target": "app1-preprod",
+      "public": "app/app1/build/web",
+      "ignore": ["firebase.json", "**/.*"],
+      "rewrites": [{ "source": "**", "destination": "/index.html" }]
+    },
+    {
+      "target": "app1-prod",
+      "public": "app/app1/build/web",
+      "ignore": ["firebase.json", "**/.*"],
+      "rewrites": [{ "source": "**", "destination": "/index.html" }]
+    }
+  ]
+}

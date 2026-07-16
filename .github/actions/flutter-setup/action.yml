@@ -1,0 +1,29 @@
+name: Flutter setup
+description: Install the pinned Flutter SDK, bootstrap the Melos workspace, and run codegen (generated files are not committed).
+
+runs:
+  using: composite
+  steps:
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: 3.35.7
+        channel: stable
+        cache: true
+
+    # melos.yaml points sdkPath at .fvm/flutter_sdk (local fvm); on CI the SDK
+    # comes from flutter-action instead, so override via MELOS_SDK_PATH.
+    - name: Point melos at the CI Flutter SDK
+      shell: bash
+      run: echo "MELOS_SDK_PATH=$FLUTTER_ROOT" >> "$GITHUB_ENV"
+
+    - name: Resolve workspace tooling
+      shell: bash
+      run: dart pub get
+
+    - name: Bootstrap packages
+      shell: bash
+      run: dart run melos bootstrap
+
+    - name: Generate code (l10n + build_runner)
+      shell: bash
+      run: dart run melos run gen

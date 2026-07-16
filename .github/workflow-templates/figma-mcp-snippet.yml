@@ -1,0 +1,31 @@
+# TEMPLATE / SNIPPET (not a standalone workflow).
+#
+# Figma integration for the @claude agent: lets it read Figma frames, styles, and
+# tokens so "implement this screen from <figma-url>" works.
+#
+# Activate by editing .github/workflows/claude.yml — extend the claude-code-action
+# step's `claude_args` with the --mcp-config block below, and add the FIGMA_TOKEN
+# secret (Figma -> Settings -> Personal access tokens).
+#
+#      - uses: anthropics/claude-code-action@v1
+#        with:
+#          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+#          claude_args: |
+#            --allowedTools "Bash(dart:*),Bash(flutter:*),Bash(fvm:*),Bash(melos:*),Bash(git:*),Bash(gh:*)"
+#            --mcp-config '{"mcpServers":{"figma":{"command":"npx","args":["-y","figma-developer-mcp","--stdio"],"env":{"FIGMA_API_KEY":"${{ secrets.FIGMA_TOKEN }}"}}}}'
+#
+# Usage once active — comment on an issue:
+#   @claude implement the profile card from
+#   https://www.figma.com/design/<file>/<name>?node-id=<id> following the
+#   feature-development skill.
+name: Figma MCP snippet (documentation only)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  noop:
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "This file documents the Figma MCP setup; see header comments."

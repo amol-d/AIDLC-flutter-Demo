@@ -1,0 +1,57 @@
+name: Feature request (mini-PRD)
+description: Describe a feature so the AIDLC agent can implement it. Mention @claude in the description to start the agent.
+title: "[Feature] "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fill this in like a mini-PRD. To have the AI implement it, include
+        `@claude` anywhere in the description (or comment `@claude go` after filing).
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / goal
+      description: What user problem does this solve? What should be true when it ships?
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected behavior
+      description: Screens, flows, copy. Reference Figma links if available.
+      placeholder: |
+        - New Settings screen reachable from Home app bar
+        - Language toggle (English / Hindi), persisted across restarts
+    validations:
+      required: true
+  - type: textarea
+    id: data
+    attributes:
+      label: Data / API
+      description: Endpoints, entities, error cases (if any).
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Each criterion should be verifiable by a test.
+      placeholder: |
+        - [ ] Toggling to Hindi re-renders visible strings in Hindi
+        - [ ] Choice persists after app restart
+    validations:
+      required: true
+  - type: dropdown
+    id: app
+    attributes:
+      label: Target app
+      options: [app1, app2, shared packages]
+      default: 0
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Ship to
+      description: How far should this be promoted once merged?
+      options: [DEV only, DEV + PREPROD, DEV + PREPROD + PROD]
+      default: 0

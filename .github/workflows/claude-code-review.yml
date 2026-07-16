@@ -1,0 +1,42 @@
+# Automated AI review on every PR, applying .claude/skills/code-review.
+# Requires: ANTHROPIC_API_KEY secret + the Claude GitHub App installed.
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+jobs:
+  review:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Review PR #${{ github.event.pull_request.number }} in ${{ github.repository }}.
+
+            Apply the checklist in .claude/skills/code-review/SKILL.md strictly:
+            layer violations first (domain importing data, blocs bypassing use cases,
+            cross-app imports, router use inside blocs), then data correctness
+            (nullable wire fields, mapper defaults, 200-with-error handling), then
+            missing tests (DTO wire-shape, use-case forwarding, bloc success+failure),
+            then conventions (l10n in both ARB files, constants, barrel exports,
+            naming), then safety (secrets, logging of bodies/credentials).
+
+            Read the changed code before claiming anything. Post your findings as a
+            single PR review using `gh pr review` with inline comments where possible;
+            approve if nothing severe remains, otherwise request changes. Be concise —
+            skip style nits the formatter already enforces.
+          claude_args: |
+            --allowedTools "Read,Glob,Grep,Bash(git diff:*),Bash(git log:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr review:*),Bash(gh api:*)"

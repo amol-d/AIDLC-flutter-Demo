@@ -1,0 +1,74 @@
+# PREPROD deploy: fires on every merge to `preprod`.
+# Skips cleanly until Firebase secrets exist (Documentation/setup/firebase-setup.md).
+name: Deploy PREPROD
+
+on:
+  push:
+    branches: [preprod]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-preprod
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  check-secrets:
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.check.outputs.web }}
+      android: ${{ steps.check.outputs.android }}
+    steps:
+      - id: check
+        run: |
+          echo "web=${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' && secrets.FIREBASE_PROJECT_ID != '' }}" >> "$GITHUB_OUTPUT"
+          echo "android=${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' && secrets.FIREBASE_PROJECT_ID != '' && secrets.FIREBASE_ANDROID_APP_ID != '' }}" >> "$GITHUB_OUTPUT"
+
+  deploy-web:
+    needs: check-secrets
+    if: needs.check-secrets.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/flutter-setup
+      - name: Build app1 web (PREPROD)
+        working-directory: app/app1
+        run: flutter build web --release --dart-define FLAVOR=preprod
+      - name: Deploy to Firebase Hosting (app1-preprod)
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
+          channelId: live
+          target: app1-preprod
+
+  deploy-android:
+    needs: check-secrets
+    if: needs.check-secrets.outputs.android == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: ./.github/actions/flutter-setup
+      - name: Build app1 APK (PREPROD)
+        working-directory: app/app1
+        run: flutter build apk --release --dart-define FLAVOR=preprod
+      - name: Distribute via Firebase App Distribution
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-sa.json"
+          npx -y firebase-tools appdistribution:distribute \
+            app/app1/build/app/outputs/flutter-apk/app-release.apk \
+            --app "${{ secrets.FIREBASE_ANDROID_APP_ID }}" \
+            --project "${{ secrets.FIREBASE_PROJECT_ID }}" \
+            --groups testers \
+            --release-notes "PREPROD ${GITHUB_SHA::7} (${GITHUB_REF_NAME})"
