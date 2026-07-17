@@ -32,6 +32,13 @@ jobs:
       - name: Install Codex CLI
         run: npm install -g @openai/codex
 
+      # The Codex CLI does not read OPENAI_API_KEY from the environment for
+      # API calls; it authenticates from its own auth store, so log in first.
+      - name: Authenticate Codex with the API key
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: printf '%s' "$OPENAI_API_KEY" | codex login --with-api-key
+
       - name: Fetch the PR diff
         env:
           GH_TOKEN: ${{ github.token }}
@@ -41,7 +48,7 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          codex exec --dangerously-bypass-approvals-and-sandbox \
+          codex exec --dangerously-bypass-approvals-and-sandbox </dev/null \
             --output-last-message "$RUNNER_TEMP/review.md" \
             "Review the pull request diff in $RUNNER_TEMP/pr.diff against this
              repository's rules. Apply .claude/skills/code-review/SKILL.md
