@@ -1,6 +1,8 @@
 # --- OS / IDE ---
 .DS_Store
-.idea/
+# Ignore IDE state but SHARE run configurations via VCS (JetBrains-recommended).
+.idea/*
+!.idea/runConfigurations/
 *.iml
 *.swp
 .vscode/settings.json

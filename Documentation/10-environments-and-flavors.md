@@ -44,6 +44,24 @@ fvm flutter build web --release --dart-define FLAVOR=prod
 CI passes both (`--flavor dev --dart-define FLAVOR=dev`) so the two layers can never
 disagree.
 
+## Android Studio / IntelliJ run configurations
+
+Ready-made run configurations are shared via VCS in `.idea/runConfigurations/`
+(the `.gitignore` ignores `.idea/*` but re-includes that one folder, the
+JetBrains-recommended way to share configs while keeping `workspace.xml` local).
+
+Both apps get one configuration per **environment × build mode**:
+
+| App | Configs | Flags used |
+|---|---|---|
+| `app1` | `app1 <dev\|preprod\|prod> (<debug\|profile\|release>)` | `--flavor <env> --dart-define FLAVOR=<env>` (+`--profile`/`--release`) |
+| `app2` | `app2 <dev\|preprod\|prod> (<debug\|profile\|release>)` | `--dart-define FLAVOR=<env>` only (no native flavors) |
+
+Debug is the default mode (no flag); profile/release add `--profile`/`--release`.
+After editing `pubspec.yaml`'s `flavorizr:` section, regenerate native config
+(`dart run flutter_flavorizr -f`) — the run configs themselves don't need changes
+unless flavor names change.
+
 ## Notes
 
 - app2 intentionally has no native flavors (skeleton app; dart-define only).

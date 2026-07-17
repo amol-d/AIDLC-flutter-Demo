@@ -16,6 +16,15 @@ runs:
       shell: bash
       run: echo "MELOS_SDK_PATH=$FLUTTER_ROOT" >> "$GITHUB_ENV"
 
+    # Nested script calls inside melos.yaml (e.g. `gen` -> `melos run l10n`)
+    # shell out to a `melos` binary, so one must exist on PATH. Pin the same
+    # 6.x line the workspace uses in pubspec.yaml.
+    - name: Put melos on PATH
+      shell: bash
+      run: |
+        dart pub global activate melos 6.3.3
+        echo "$HOME/.pub-cache/bin" >> "$GITHUB_PATH"
+
     - name: Resolve workspace tooling
       shell: bash
       run: dart pub get
