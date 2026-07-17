@@ -5,9 +5,14 @@ Two separate applications prove the monorepo supports independent apps sharing p
 
 ## app1 — full demo app (`com.example.app1`, per-flavor suffixes)
 
-- **Screens:** Login (`/login`), Home (`/home`, guarded, initial route)
+- **Screens:** Login (`/login`), Home (`/home`, guarded, initial route),
+  Settings (`/settings`, guarded)
 - **Auth:** dummyjson login; token persisted via `AppPreferences` (localStorage on web,
   so sessions survive refresh)
+- **Settings:** in-app language toggle (English / हिन्दी) that switches localization live
+  via the app-wide `AppBloc`; the choice persists across launches
+- **Version label:** the app version (`package_info_plus`) shows under the login button
+  and, in bold, on the Settings screen — sourced through a `GetAppVersionUseCase`
 - **Navigation:** auto_route with path URLs on web (real slugs), `AuthGuard` redirecting
   unauthenticated users to login
 - **Deeplinks:** `aidlc://app1/home`, `aidlc://app1/login` (app_links; Android
