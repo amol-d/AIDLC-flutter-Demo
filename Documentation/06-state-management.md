@@ -33,6 +33,17 @@ Future<void> _onSubmitted(LoginSubmitted event, Emitter<LoginState> emit) =>
 `runBlocCatching` normalizes anything thrown into an `AppException`, so event handlers
 never crash and error states always carry a user-presentable message.
 
+## App-wide state: AppBloc
+
+Most blocs are scoped to one screen, but `app/app1/lib/app/bloc/app_bloc.dart` is an
+app-level singleton provided above the router. It holds cross-cutting state — the active
+`languageCode` (drives `MaterialApp.locale`, defaulting to `en`) and the `appVersion`
+string — and is the bloc the Settings language toggle dispatches to. It follows the same
+`BaseBloc` + `runBlocCatching` pattern: on `started` it loads the persisted language and
+the version (a version-lookup failure is swallowed so the app still renders), and
+`languageChanged` persists and emits the new locale. Feature screens still get their own
+blocs; only genuinely app-global concerns belong here.
+
 ## Rules
 
 - Blocs receive **use cases** (and `AppNavigator`) via constructor injection — never
