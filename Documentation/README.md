@@ -18,9 +18,9 @@ DEV / PREPROD / PROD.
 | 7 | [Navigation & Deeplinks](./07-navigation-and-deeplinks.md) | auto_route, guards, web slugs, aidlc:// |
 | 8 | [Dependency Injection](./08-dependency-injection.md) | GetIt + Injectable, init order |
 | 9 | [Networking & Data](./09-networking-and-data.md) | Dio clients, DTOs, mappers, preferences |
-| 10 | [Environments & Flavors](./10-environments-and-flavors.md) | dev / preprod / prod |
+| 10 | [Environments & Flavors](./10-environments-and-flavors.md) | dev / preprod / prod, native flavors, run configs |
 | 11 | [Testing](./11-testing.md) | Test layers, conventions, commands |
-| 12 | [AIDLC Automation](./12-aidlc-automation.md) | @claude workflows, skills, review bot |
+| 12 | [AIDLC Automation](./12-aidlc-automation.md) | @codex (active) / @claude workflows, skills, review bot |
 | 13 | [CI/CD & Deployment](./13-ci-cd-and-deployment.md) | Pipelines, Firebase Hosting/App Distribution |
 | 14 | [Coding Conventions](./14-coding-conventions.md) | Naming, codegen, linting |
 

@@ -24,16 +24,21 @@ dart run melos run gen # REQUIRED: l10n + build_runner (generated files are not 
 ## Run
 
 ```sh
-# Web (fastest way to see the app)
+# Web (fastest way to see the app) — no native flavors on web, use the dart-define
 cd app/app1
 fvm flutter run -d chrome --dart-define FLAVOR=dev
 
-# Android
-fvm flutter run -d <device> --dart-define FLAVOR=dev
+# Android / iOS — app1 has native flavors, so --flavor is required
+fvm flutter run -d <device> --flavor dev --dart-define FLAVOR=dev
 
-# app2 (skeleton)
+# app2 (skeleton) — no native flavors, dart-define only
 cd app/app2 && fvm flutter run -d chrome --dart-define FLAVOR=dev
 ```
+
+In Android Studio / IntelliJ, use the shared run configurations instead (Run menu →
+`app1 dev (debug)`, `app2 prod (release)`, …) — one per app × environment × build mode,
+committed under `.idea/runConfigurations/`. See
+[10-environments-and-flavors.md](./10-environments-and-flavors.md).
 
 Sign in with the demo credentials: **emilys / emilyspass** (public dummyjson.com API).
 

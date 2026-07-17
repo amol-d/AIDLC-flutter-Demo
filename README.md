@@ -5,8 +5,9 @@ PRD, a GitHub issue, a JIRA ticket, or a one-line `@claude` comment — and an L
 implements it, tests it, gets it reviewed, and ships it through DEV → PREPROD → PROD.
 
 The vehicle is a production-shaped **fvm + Melos Flutter monorepo** with clean
-architecture: two apps, three shared packages, codegen, localization (en/hi), flavors,
-native splash, deeplinks, web slugs, and tests at every layer.
+architecture: two apps, three shared packages, codegen, localization (en/hi) with an
+in-app language toggle, native flavors, native splash, deeplinks, web slugs, and tests at
+every layer.
 
 ## The lifecycle
 
@@ -41,6 +42,11 @@ fvm flutter run -d chrome --dart-define FLAVOR=dev
 Sign in with **emilys / emilyspass** (live round-trip against the public dummyjson API,
 through the full use-case → repository → DTO → mapper pipeline).
 
+In Android Studio / IntelliJ, pick a ready-made run configuration instead — e.g.
+`app1 dev (debug)` or `app2 prod (release)` — shared from `.idea/runConfigurations/`
+(one per app × dev/preprod/prod × debug/profile/release). See
+[Documentation/10-environments-and-flavors.md](Documentation/10-environments-and-flavors.md).
+
 ## Try the AI lifecycle
 
 1. Add the `OPENAI_API_KEY` secret — 2 minutes, steps in
@@ -55,13 +61,14 @@ through the full use-case → repository → DTO → mapper pipeline).
 
 | Path | What |
 |---|---|
-| `app/app1` | Full demo app — login, home, guards, deeplinks (`aidlc://app1/...`), splash |
+| `app/app1` | Full demo app — login, home, settings (live en/hi toggle), guards, deeplinks (`aidlc://app1/...`), splash, version label |
 | `app/app2` | Minimal second app proving multi-app support |
 | `package/domain` | Entities, use cases, `Repository` contract, navigation abstractions |
 | `package/data` | DTOs, mappers, Dio clients, `RepositoryImpl`, preferences |
 | `package/shared` | Constants, exceptions, `Result`, l10n, `Flavor` |
 | `.claude/skills/` | Agent skills: feature-development, code-review, deploy, jira-ticket |
 | `.github/workflows/` | CI, @codex dev agent (OpenAI), AI review, per-env deploys (+ optional @claude) |
+| `.idea/runConfigurations/` | Shared Android Studio run configs — app1/app2 × dev/preprod/prod × debug/profile/release |
 | `Documentation/` | Full docs — start at [Documentation/README.md](Documentation/README.md) |
 
 ## Branching
