@@ -39,19 +39,7 @@ jobs:
         working-directory: app/app2
         run: flutter build web --release --dart-define FLAVOR=dev
 
-  # Android is the slow lane; run it only when promoting toward release branches.
-  build-android:
-    name: build-android
-    needs: analyze-test
-    if: github.event_name == 'pull_request' && (github.base_ref == 'preprod' || github.base_ref == 'main')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - uses: ./.github/actions/flutter-setup
-      - name: Build app1 (debug APK, dev flavor)
-        working-directory: app/app1
-        run: flutter build apk --debug --flavor dev --dart-define FLAVOR=dev
+  # Android is the slow lane and lives in its own workflow (android-build.yml),
+  # gated at the trigger level to PRs into preprod/main. Keeping it out of this
+  # matrix avoids a redundant "skipped" build-android check on push runs, where
+  # the whole CI workflow also fires.
