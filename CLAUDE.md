@@ -88,6 +88,11 @@ Branches: `feature/*` -> `dev` -> `preprod` -> `main` (prod). Merges to dev/prep
 trigger the corresponding deploy workflow. Keep PRs scoped to one feature; change only the
 requested app unless behavior clearly belongs in a package.
 
+**Promotion gate:** after a feature is committed and tested on its `feature/*` branch,
+ASK THE USER before creating the PR to `dev`. After it lands on dev and tests pass, ASK
+before the promotion PR to `preprod`; same again for `main`. One approval covers one
+promotion only — never chain them automatically.
+
 Before pushing: `dart run melos run format && dart run melos run analyze && dart run melos run test:unit`.
 
 ## Safety

@@ -7,6 +7,23 @@ description: Promote code through DEV -> PREPROD -> PROD environments. Use when 
 
 Deployments are branch-driven. There is no manual deploy step — merging IS deploying.
 
+## Gate: ask before every promotion
+
+**Never raise a PR to the next stage without explicit user approval.** The full loop is:
+
+```
+new feature -> feature/<slug> branch -> commit -> test (analyze + test:unit + run it)
+  -> everything green? ASK THE USER: "create PR to dev?"
+  -> merged to dev -> DEV deploy -> test on DEV
+  -> everything green? ASK THE USER: "create PR to preprod?"
+  -> merged to preprod -> PREPROD deploy -> test on PREPROD
+  -> everything green? ASK THE USER: "create PR to main?"
+  -> merged to main -> PROD deploy -> verify PROD
+```
+
+Approval is per-promotion: a yes for dev does not imply a yes for preprod or main.
+Report test evidence when asking, so the user decides with the facts in front of them.
+
 | Branch | Environment | Workflow | Targets |
 |---|---|---|---|
 | `dev` | DEV | `.github/workflows/deploy-dev.yml` | Firebase Hosting (dev site) + App Distribution (FLAVOR=dev APK) |
@@ -14,14 +31,15 @@ Deployments are branch-driven. There is no manual deploy step — merging IS dep
 | `main` | PROD | `.github/workflows/deploy-prod.yml` | Firebase Hosting (prod site) + App Distribution (FLAVOR=prod APK) |
 
 ## To deploy to DEV
-Merge the feature PR into `dev` (CI must be green).
+With user approval, merge the feature PR into `dev` (CI must be green).
 
-## To promote DEV -> PREPROD
+## To promote DEV -> PREPROD (after user approval)
 ```sh
 gh pr create --base preprod --head dev --title "Promote dev to preprod" \
   --body "Promotion PR. Changes included: <list>"
 ```
-Merge once CI passes. Same pattern for PREPROD -> PROD (`--base main --head preprod`).
+Merge once CI passes. Same pattern for PREPROD -> PROD (`--base main --head preprod`),
+again only after asking.
 
 ## Rules
 
