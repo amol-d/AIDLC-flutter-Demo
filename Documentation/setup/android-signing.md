@@ -63,7 +63,22 @@ The printed certificate should show your alias/fingerprint, not "Android Debug".
 - The signing config is on the `release` **build type**, so `dev`/`preprod`/`prod`
   release builds all use the upload key. To sign *only* `prod` with it, move
   `signingConfig` into the `prod` flavor block in `android/app/flavorizr.gradle.kts`.
-- **CI-driven prod signing** (optional): the keystore can't live on the runner. Base64-
-  encode the `.jks` into a repo secret, decode it in `deploy-prod.yml`, and write
-  `key.properties` from secrets before `flutter build`. Not wired yet — the local flow
-  above is the current path.
+## CI-driven prod signing
+
+`deploy-prod.yml` signs the release APK from secrets — no keystore lives on the runner.
+Its `Restore signing config from secrets` step base64-decodes the keystore into
+`$RUNNER_TEMP` and writes `key.properties` before `flutter build`; the Gradle wiring then
+signs `release` with the upload key. The step is guarded by a `signing` output on the
+`check-secrets` job, so if the signing secrets are absent it skips and the build falls
+back to the debug key.
+
+Required repository secrets (Settings → Secrets and variables → Actions):
+
+| Secret | Value |
+|---|---|
+| `ANDROID_KEYSTORE_BASE64` | `base64 -i <keystore>.jks \| tr -d '\n'` output |
+| `ANDROID_KEYSTORE_PASSWORD` | store password |
+| `ANDROID_KEY_PASSWORD` | key password |
+| `ANDROID_KEY_ALIAS` | key alias (e.g. `upload`) |
+
+GitHub masks these in logs and wipes `$RUNNER_TEMP` when the job ends.
