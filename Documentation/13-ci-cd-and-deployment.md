@@ -19,7 +19,19 @@ On every PR and push to dev/preprod/main:
 1. **analyze-test** — Flutter 3.35.7 setup (composite action `.github/actions/flutter-setup`),
    `melos bootstrap`, `melos run gen`, `melos run analyze`, `melos run test:unit`.
 2. **build-web** — release web builds of app1 + app2.
-3. **build-android** — debug APK, only on PRs targeting preprod/main (slower lane).
+
+## Android build (`android-build.yml`)
+
+Android is the slow lane, so it lives in a **separate workflow** triggered only on PRs
+whose base is `preprod` or `main` (`pull_request: branches: [preprod, main]`):
+
+- **build-android** — debug APK of app1 (dev flavor).
+
+The base-branch filter is on the trigger, not a job `if`. That's deliberate: keeping it
+in `ci.yml` with an `if` meant the `push`-triggered CI run (which also fires on the same
+commit) reported a redundant **skipped** `build-android` check next to the real one from
+the PR run. As its own workflow it simply doesn't start except on preprod/main PRs, so
+feature→dev PRs stay fast and no phantom "skipped" check appears.
 
 ## Deploys (`deploy-dev.yml`, `deploy-preprod.yml`, `deploy-prod.yml`)
 
