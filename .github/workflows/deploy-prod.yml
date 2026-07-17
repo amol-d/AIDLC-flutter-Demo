@@ -21,11 +21,13 @@ jobs:
     outputs:
       web: ${{ steps.check.outputs.web }}
       android: ${{ steps.check.outputs.android }}
+      signing: ${{ steps.check.outputs.signing }}
     steps:
       - id: check
         run: |
           echo "web=${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' && secrets.FIREBASE_PROJECT_ID != '' }}" >> "$GITHUB_OUTPUT"
           echo "android=${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' && secrets.FIREBASE_PROJECT_ID != '' && secrets.FIREBASE_ANDROID_APP_ID_PROD != '' }}" >> "$GITHUB_OUTPUT"
+          echo "signing=${{ secrets.ANDROID_KEYSTORE_BASE64 != '' && secrets.ANDROID_KEYSTORE_PASSWORD != '' && secrets.ANDROID_KEY_PASSWORD != '' && secrets.ANDROID_KEY_ALIAS != '' }}" >> "$GITHUB_OUTPUT"
 
   deploy-web:
     needs: check-secrets
@@ -57,6 +59,25 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: ./.github/actions/flutter-setup
+      # Reconstruct the upload keystore + key.properties from secrets so the release
+      # APK is signed with the real key. Skips when signing secrets are absent, in
+      # which case build.gradle.kts falls back to the debug key (build still works).
+      # See Documentation/setup/android-signing.md.
+      - name: Restore signing config from secrets
+        if: needs.check-secrets.outputs.signing == 'true'
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          echo "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/upload-keystore.jks"
+          cat > app/app1/android/key.properties <<EOF
+          storePassword=$STORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=$RUNNER_TEMP/upload-keystore.jks
+          EOF
       - name: Build app1 APK (PROD flavor -> com.example.app1)
         working-directory: app/app1
         run: flutter build apk --release --flavor prod --dart-define FLAVOR=prod
