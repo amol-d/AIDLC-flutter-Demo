@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="app2 dev (release)" type="FlutterRunConfigurationType" factoryName="Flutter">
+    <option name="additionalArgs" value="--dart-define FLAVOR=dev --release" />
+    <option name="filePath" value="$PROJECT_DIR$/app/app2/lib/main.dart" />
+    <method v="2" />
+  </configuration>
+</component>
