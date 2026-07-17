@@ -26,6 +26,7 @@ DEV / PREPROD / PROD.
 
 Setup guides: [GitHub setup](./setup/github-setup.md) ·
 [Firebase setup](./setup/firebase-setup.md) ·
+[Android signing](./setup/android-signing.md) ·
 [JIRA / Slack / Figma integrations](./setup/integrations-jira-slack-figma.md)
 
 ## Quick start
