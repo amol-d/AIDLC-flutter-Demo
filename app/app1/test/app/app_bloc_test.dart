@@ -11,9 +11,12 @@ class MockGetLanguageUseCase extends Mock implements GetLanguageUseCase {}
 
 class MockSetLanguageUseCase extends Mock implements SetLanguageUseCase {}
 
+class MockGetAppVersionUseCase extends Mock implements GetAppVersionUseCase {}
+
 void main() {
   late MockGetLanguageUseCase getLanguageUseCase;
   late MockSetLanguageUseCase setLanguageUseCase;
+  late MockGetAppVersionUseCase getAppVersionUseCase;
 
   setUpAll(() {
     registerFallbackValue(const NoInput());
@@ -23,17 +26,40 @@ void main() {
   setUp(() {
     getLanguageUseCase = MockGetLanguageUseCase();
     setLanguageUseCase = MockSetLanguageUseCase();
+    getAppVersionUseCase = MockGetAppVersionUseCase();
   });
 
-  AppBloc buildBloc() => AppBloc(getLanguageUseCase, setLanguageUseCase);
+  AppBloc buildBloc() =>
+      AppBloc(getLanguageUseCase, setLanguageUseCase, getAppVersionUseCase);
 
   group('AppBloc', () {
     blocTest<AppBloc, AppState>(
-      'loads the persisted language on start',
+      'loads the persisted language and the app version on start',
       build: () {
         when(
           () => getLanguageUseCase.execute(any()),
         ).thenReturn(const GetLanguageOutput(languageCode: 'hi'));
+        when(() => getAppVersionUseCase.execute(any())).thenAnswer(
+          (_) async => const GetAppVersionOutput(version: '1.2.3+4'),
+        );
+        return buildBloc();
+      },
+      act: (bloc) => bloc.add(const AppEvent.started()),
+      expect: () => [
+        const AppState(languageCode: 'hi'),
+        const AppState(languageCode: 'hi', appVersion: '1.2.3+4'),
+      ],
+    );
+
+    blocTest<AppBloc, AppState>(
+      'still applies the language when the version lookup fails',
+      build: () {
+        when(
+          () => getLanguageUseCase.execute(any()),
+        ).thenReturn(const GetLanguageOutput(languageCode: 'hi'));
+        when(
+          () => getAppVersionUseCase.execute(any()),
+        ).thenThrow(const UnknownException('no platform info'));
         return buildBloc();
       },
       act: (bloc) => bloc.add(const AppEvent.started()),

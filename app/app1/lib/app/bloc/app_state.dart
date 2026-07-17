@@ -6,7 +6,10 @@ part 'app_state.freezed.dart';
 
 @freezed
 class AppState with _$AppState {
-  const factory AppState({@Default('en') String languageCode}) = _AppState;
+  const factory AppState({
+    @Default('en') String languageCode,
+    @Default('') String appVersion,
+  }) = _AppState;
 
   const AppState._();
 

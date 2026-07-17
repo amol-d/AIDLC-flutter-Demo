@@ -6,22 +6,34 @@ import '../../base/bloc/base_bloc.dart';
 import 'app_event.dart';
 import 'app_state.dart';
 
-/// App-wide state (currently the UI locale). Registered as a lazy singleton
+/// App-wide state (UI locale + app version). Registered as a lazy singleton
 /// because MyApp and the Settings screen share the same instance.
 @LazySingleton()
 class AppBloc extends BaseBloc<AppEvent, AppState> {
-  AppBloc(this._getLanguageUseCase, this._setLanguageUseCase)
-    : super(const AppState()) {
+  AppBloc(
+    this._getLanguageUseCase,
+    this._setLanguageUseCase,
+    this._getAppVersionUseCase,
+  ) : super(const AppState()) {
     on<AppStarted>(_onStarted);
     on<AppLanguageChanged>(_onLanguageChanged);
   }
 
   final GetLanguageUseCase _getLanguageUseCase;
   final SetLanguageUseCase _setLanguageUseCase;
+  final GetAppVersionUseCase _getAppVersionUseCase;
 
-  void _onStarted(AppStarted event, Emitter<AppState> emit) {
-    final output = _getLanguageUseCase.execute(const NoInput());
-    emit(state.copyWith(languageCode: output.languageCode));
+  Future<void> _onStarted(AppStarted event, Emitter<AppState> emit) {
+    final language = _getLanguageUseCase.execute(const NoInput());
+    emit(state.copyWith(languageCode: language.languageCode));
+
+    // The version label is cosmetic - a lookup failure just leaves it hidden.
+    return runBlocCatching(
+      action: () async {
+        final version = await _getAppVersionUseCase.execute(const NoInput());
+        emit(state.copyWith(appVersion: version.version));
+      },
+    );
   }
 
   Future<void> _onLanguageChanged(

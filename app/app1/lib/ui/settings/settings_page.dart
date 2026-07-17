@@ -77,6 +77,18 @@ class _SettingsView extends StatelessWidget {
                   ],
                 ),
               ),
+              if (state.appVersion.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Text(
+                    s.versionLabel(state.appVersion),
+                    key: const Key('settings_version_label'),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
             ],
           );
         },
