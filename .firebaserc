@@ -1,13 +1,13 @@
 {
   "projects": {
-    "default": "aidlc-demo"
+    "default": "aidlc-demo-d8c2a"
   },
   "targets": {
-    "aidlc-demo": {
+    "aidlc-demo-d8c2a": {
       "hosting": {
-        "app1-dev": ["aidlc-demo-app1-dev"],
-        "app1-preprod": ["aidlc-demo-app1-preprod"],
-        "app1-prod": ["aidlc-demo-app1-prod"]
+        "app1-dev": ["app1-dev"],
+        "app1-preprod": ["app1-preprod"],
+        "app1-prod": ["app1-prod"]
       }
     }
   }
