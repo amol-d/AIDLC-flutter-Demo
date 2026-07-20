@@ -6,7 +6,10 @@ runs:
   steps:
     - uses: subosito/flutter-action@v2
       with:
-        flutter-version: 3.35.7
+        # Single source of truth: read the pinned version from .fvmrc (the same
+        # file fvm uses locally), so a Flutter upgrade is one edit. See the
+        # flutter-upgrade skill.
+        flutter-version-file: .fvmrc
         channel: stable
         cache: true
 
