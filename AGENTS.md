@@ -61,6 +61,10 @@ Branch from `dev` as `feature/<slug>`; PR back into `dev`. Promotions: `dev -> p
 main`. Merges deploy automatically (Firebase Hosting + App Distribution). Never commit
 secrets or generated files.
 
+**Version bump:** when raising a `feature/*` -> `dev` PR, bump app1's **minor** version in
+`app/app1/pubspec.yaml` as the last change before committing — minor +1, patch -> 0, build
++1 (`1.0.0+1` -> `1.1.0+2`). Docs/CI/tooling-only PRs that change no app behaviour may skip it.
+
 **Promotion gate:** after committing and testing on the feature branch, ask the user
 before opening the PR to `dev`. Ask again (separately) before each promotion PR
 (`dev -> preprod`, `preprod -> main`). Never chain promotions on a single approval.
