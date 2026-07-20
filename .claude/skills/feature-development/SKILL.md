@@ -56,7 +56,24 @@ dart run melos run test:unit
 - Use-case forwarding/validation test — `package/domain/test/usecase/`
 - Bloc test (success + failure paths) — `app/app1/test/ui/<feature>/`
 
-## 5. PR
+## 5. Bump the version
+
+Once the feature is implemented, generated, formatted, analyzed, and tested (all green),
+**bump the app version before committing** — this is the last change and rides in the same
+feature -> dev PR.
+
+In `app/app1/pubspec.yaml` (the app being released), bump the **minor** segment by 1,
+reset patch to 0, and increment the build number:
+
+```
+version: MAJOR.MINOR.PATCH+BUILD  ->  MAJOR.(MINOR+1).0+(BUILD+1)
+# e.g. 1.0.0+1 -> 1.1.0+2, then 1.1.0+2 -> 1.2.0+3
+```
+
+The build number must strictly increase (Android versionCode / iOS build). PRs that change
+no app behaviour (docs, CI, tooling only) may skip the bump.
+
+## 6. PR
 
 Branch `feature/<slug>` from `dev`, PR into `dev`. Description: what/why, screens touched,
-test evidence. Never commit generated files or secrets.
+the version bump, and test evidence. Never commit generated files or secrets.

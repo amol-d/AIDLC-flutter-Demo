@@ -93,6 +93,10 @@ ASK THE USER before creating the PR to `dev`. After it lands on dev and tests pa
 before the promotion PR to `preprod`; same again for `main`. One approval covers one
 promotion only — never chain them automatically.
 
+**Version bump:** when raising a `feature/*` -> `dev` PR, bump app1's **minor** version in
+`app/app1/pubspec.yaml` as the last change before committing — minor +1, patch -> 0, build
++1 (`1.0.0+1` -> `1.1.0+2`). Docs/CI/tooling-only PRs that change no app behaviour may skip it.
+
 Before pushing: `dart run melos run format && dart run melos run analyze && dart run melos run test:unit`.
 
 ## Safety
