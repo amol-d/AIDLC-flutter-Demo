@@ -1,5 +1,6 @@
 import 'package:app1/app/bloc/app_bloc.dart';
 import 'package:app1/app/bloc/app_event.dart';
+import 'package:app1/ui/settings/bloc/settings_bloc.dart';
 import 'package:app1/ui/settings/settings_page.dart';
 import 'package:domain/domain.dart';
 import 'package:flutter/material.dart';
@@ -15,11 +16,19 @@ class MockSetLanguageUseCase extends Mock implements SetLanguageUseCase {}
 
 class MockGetAppVersionUseCase extends Mock implements GetAppVersionUseCase {}
 
+class MockLogoutUseCase extends Mock implements LogoutUseCase {}
+
+class MockAppNavigator extends Mock implements AppNavigator {}
+
 void main() {
   final getIt = GetIt.instance;
 
+  late MockLogoutUseCase logoutUseCase;
+  late MockAppNavigator appNavigator;
+
   setUpAll(() {
     registerFallbackValue(const NoInput());
+    registerFallbackValue(const AppRouteInfo.login());
   });
 
   setUp(() {
@@ -33,6 +42,9 @@ void main() {
       () => getAppVersionUseCase.execute(any()),
     ).thenAnswer((_) async => const GetAppVersionOutput(version: '9.9.9+99'));
 
+    logoutUseCase = MockLogoutUseCase();
+    appNavigator = MockAppNavigator();
+
     // The page reads the app-level AppBloc singleton from GetIt.
     getIt.registerLazySingleton<AppBloc>(
       () => AppBloc(
@@ -40,6 +52,10 @@ void main() {
         MockSetLanguageUseCase(),
         getAppVersionUseCase,
       )..add(const AppEvent.started()),
+    );
+    // ...and its own SettingsBloc for the logout action.
+    getIt.registerFactory<SettingsBloc>(
+      () => SettingsBloc(logoutUseCase, appNavigator),
     );
   });
 
@@ -76,5 +92,27 @@ void main() {
 
     expect(find.byKey(const Key('settings_language_en')), findsOneWidget);
     expect(find.byKey(const Key('settings_language_hi')), findsOneWidget);
+  });
+
+  testWidgets('logout tile clears the session and navigates to login', (
+    tester,
+  ) async {
+    when(() => logoutUseCase.execute(any())).thenAnswer((_) async {});
+    when(() => appNavigator.replaceAll(any())).thenAnswer((_) async {});
+
+    await tester.pumpWidget(buildSubject());
+    await tester.pumpAndSettle();
+
+    final logoutFinder = find.byKey(const Key('settings_logout_button'));
+    expect(logoutFinder, findsOneWidget);
+
+    await tester.tap(logoutFinder);
+    // Not pumpAndSettle: the loading spinner animates until navigation, which
+    // the mock AppNavigator does not perform. Pump to flush the async handler.
+    await tester.pump();
+    await tester.pump();
+
+    verify(() => logoutUseCase.execute(const NoInput())).called(1);
+    verify(() => appNavigator.replaceAll(const AppRouteInfo.login())).called(1);
   });
 }
