@@ -7,11 +7,14 @@ description: Turn a JIRA ticket (or any PRD/BRD/issue text) into an implemented 
 
 ## 1. Extract requirements
 
-From the ticket/PRD text, write down:
+If given a document in the [PRD/BRD template](../../Documentation/templates/PRD-template.md)
+(e.g. `docs/prd/<slug>.md`), read its fixed sections directly — they already map to the
+layers, and its `target_env` says where to ship. Otherwise, from the ticket/PRD text write
+down:
 - User-visible behavior (screens, flows, copy)
-- Data needs (entities, endpoints, error cases)
+- Data needs (entities, endpoints, error cases, field nullability)
 - Environment/flag concerns (dev-only? all flavors?)
-- Acceptance criteria (turn each into a test)
+- Acceptance criteria as Given/When/Then (turn each into a test)
 
 If the ticket references JIRA and the integration is active, fetch details via the JIRA
 workflow (see `Documentation/setup/integrations-jira-slack-figma.md`). Otherwise ask for

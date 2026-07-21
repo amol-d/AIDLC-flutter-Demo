@@ -14,6 +14,11 @@ exists, so the repo is never red because of a missing key:
 
 1. **GitHub issue / PRD**: open an issue (the `Feature request` template is shaped like a
    mini-PRD) and mention `@codex` (or `@claude`) in the body or a comment.
+1b. **Full PRD / BRD document**: for anything beyond a mini-PRD, write it with the
+   [PRD/BRD template](templates/PRD-template.md), save it at `docs/prd/<slug>.md`, and open
+   an issue: `@codex implement the PRD at docs/prd/<slug>.md`. The fixed structure maps
+   directly onto the clean-architecture layers and its Given/When/Then acceptance criteria
+   become tests.
 2. **PR comment**: mention the agent on any PR to request changes or fixes.
 3. **JIRA ticket**: with the JIRA template activated, tickets sync to issues (or paste
    the ticket text into an issue) — the `jira-ticket` skill governs how the agent turns a
