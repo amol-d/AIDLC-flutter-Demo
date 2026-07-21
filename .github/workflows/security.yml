@@ -1,0 +1,47 @@
+# Security scanning. Complements the SAST already in ci.yml
+# (`dart analyze --fatal-infos`) — note: CodeQL does not support Dart, so
+# `dart analyze` is the Dart static-analysis gate.
+name: Security
+
+on:
+  push:
+    branches: [dev, preprod, main]
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1" # weekly Monday 06:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  secret-scan:
+    name: secret-scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so gitleaks scans every commit
+      # gitleaks-action is free for personal/public repos; orgs need
+      # GITLEAKS_LICENSE. Detects committed secrets, tokens, keys.
+      - name: Scan for secrets (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+  dependency-review:
+    name: dependency-review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Flags vulnerable or newly-added dependencies AND denied licenses on
+      # the PR diff (the license-check piece). Requires the repo's Dependency
+      # graph to be enabled (Settings -> Code security). Advisory / non-blocking
+      # so it never reds CI before the graph is on or where an ecosystem
+      # (e.g. pub) isn't represented in the graph yet.
+      - name: Review dependencies
+        uses: actions/dependency-review-action@v4
+        continue-on-error: true
+        with:
+          fail-on-severity: high
+          deny-licenses: GPL-2.0, GPL-3.0, AGPL-3.0

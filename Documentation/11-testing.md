@@ -3,13 +3,33 @@
 ## Commands
 
 ```sh
-dart run melos run test:unit          # all packages with tests
+dart run melos run test:unit          # unit + widget tests (golden excluded)
+dart run melos run test:coverage      # same, with coverage/lcov.info
+dart run melos run test:golden        # golden (pixel) tests only
 cd package/data && fvm flutter test   # focused package run
 fvm flutter test test/ui/login        # focused directory
 ```
 
 Every package declares `flutter_test` in dev_dependencies so the melos filter includes it.
 Test files mirror source paths: `lib/foo/bar.dart` -> `test/foo/bar_test.dart`.
+
+## Test lanes (CI)
+
+| Lane | What | Gate |
+|---|---|---|
+| `analyze-test` | analyze + unit/widget tests | required |
+| `coverage` | `test:coverage`, fails under **65%** line coverage | required |
+| `golden` | pixel goldens (e.g. `FlavorBadge`) via `@Tags(['golden'])` | advisory* |
+| `integration-web` | `integration_test/app_test.dart` on Chrome (`flutter drive`) | advisory* |
+
+\* **Advisory** = `continue-on-error`, so it can't block a merge. Goldens are platform-sensitive
+(baselines are generated on macOS; a tolerant comparator in `app/app1/test/flutter_test_config.dart`
+absorbs ~2% anti-aliasing drift). Regenerate with
+`cd app/app1 && fvm flutter test --update-goldens --tags golden`.
+
+**Firebase Test Lab** (real-device matrix for `integration_test`) is a documented follow-up:
+add a `gcloud firebase test android run` job using the Firebase service account; the
+integration test and driver (`app/app1/test_driver/integration_test.dart`) are already in place.
 
 ## What to test at each layer
 

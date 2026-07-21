@@ -1,0 +1,46 @@
+# Release management: on merge to main, cut a GitHub Release tagged from app1's
+# version, with auto-generated notes (changelog) from the merged PRs. Idempotent
+# — skips if the tag already exists (so re-runs / no-version-change merges no-op).
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Derive version from app1 pubspec
+        id: ver
+        run: |
+          V=$(grep '^version:' app/app1/pubspec.yaml | head -1 | sed 's/version:[[:space:]]*//' | cut -d'+' -f1)
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "tag=v$V" >> "$GITHUB_OUTPUT"
+
+      - name: Create tag + release if this version is new
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.ver.outputs.tag }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists — nothing to release."
+            exit 0
+          fi
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --generate-notes \
+            --target "$GITHUB_SHA"
+          echo "Released $TAG"

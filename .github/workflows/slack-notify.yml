@@ -1,0 +1,29 @@
+# Slack deploy notifications: posts each DEV/PREPROD/PROD deploy result to a
+# channel. Skips cleanly when SLACK_WEBHOOK_URL is absent.
+name: Slack notify
+
+on:
+  workflow_run:
+    workflows: [Deploy DEV, Deploy PREPROD, Deploy PROD]
+    types: [completed]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - id: gate
+        run: echo "run=${{ secrets.SLACK_WEBHOOK_URL != '' }}" >> "$GITHUB_OUTPUT"
+      - name: Post deploy result to Slack
+        if: steps.gate.outputs.run == 'true'
+        env:
+          WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          WF: ${{ github.event.workflow_run.name }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+        run: |
+          EMOJI=":white_check_mark:"
+          [ "$CONCLUSION" != "success" ] && EMOJI=":x:"
+          TEXT="$EMOJI *$WF* — $CONCLUSION (\`$BRANCH\`)\n$RUN_URL"
+          curl -sS -X POST -H 'Content-type: application/json' \
+            --data "$(printf '{"text":"%s"}' "$TEXT")" "$WEBHOOK"
