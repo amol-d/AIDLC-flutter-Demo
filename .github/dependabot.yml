@@ -1,7 +1,10 @@
+# Dependabot targets `dev` (not the default branch `main`) so dependency PRs
+# enter the promotion flow at the bottom: dev -> preprod -> main.
 version: 2
 updates:
   # Dart/Flutter dependencies across the monorepo (root + apps + packages).
   - package-ecosystem: pub
+    target-branch: dev
     directories:
       - "/"
       - "/app/app1"
@@ -18,6 +21,7 @@ updates:
 
   # GitHub Actions used by the workflows.
   - package-ecosystem: github-actions
+    target-branch: dev
     directory: "/"
     schedule:
       interval: weekly
@@ -27,6 +31,7 @@ updates:
 
   # Android Gradle dependencies for app1.
   - package-ecosystem: gradle
+    target-branch: dev
     directory: "/app/app1/android"
     schedule:
       interval: monthly
