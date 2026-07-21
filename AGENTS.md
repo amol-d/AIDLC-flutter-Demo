@@ -1,4 +1,4 @@
-# AGENTS.md — AIDLC-Demo
+# AGENTS.md — AIDLC-flutter-Demo
 
 Instructions for any AI coding agent working in this repository. (Claude-specific
 workflows also read `CLAUDE.md`, which carries the same rules.)

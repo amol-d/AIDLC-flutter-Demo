@@ -1,7 +1,7 @@
 # Monorepo Structure
 
 ```
-AIDLC-Demo/
+AIDLC-flutter-Demo/
 ├── app/                          # Applications only
 │   ├── app1/                     # Full demo app (login, home, deeplinks, splash)
 │   │   ├── lib/

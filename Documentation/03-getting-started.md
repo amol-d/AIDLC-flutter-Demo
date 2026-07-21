@@ -10,8 +10,8 @@
 ## Setup
 
 ```sh
-git clone git@github.com:amol-d/AIDLC-Demo.git
-cd AIDLC-Demo
+git clone git@github.com:amol-d/AIDLC-flutter-Demo.git
+cd AIDLC-flutter-Demo
 
 fvm install            # installs Flutter 3.35.7 from .fvmrc
 fvm use 3.35.7
