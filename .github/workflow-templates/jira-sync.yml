@@ -10,7 +10,7 @@
 #   3. Adjust `project` and `issuetype` below to your JIRA project.
 #
 # Reverse direction (JIRA -> GitHub): create a JIRA Automation rule that sends a
-# webhook to POST /repos/amol-d/AIDLC-Demo/dispatches with
+# webhook to POST /repos/amol-d/AIDLC-flutter-Demo/dispatches with
 # {"event_type":"jira-ticket","client_payload":{"key":"...","summary":"...","description":"..."}}
 # and add a `repository_dispatch: types: [jira-ticket]` job that opens a GitHub
 # issue mentioning @claude with the ticket body — the agent takes it from there

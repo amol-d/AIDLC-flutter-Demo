@@ -1,6 +1,6 @@
-# AIDLC-Demo — Documentation
+# AIDLC-flutter-Demo — Documentation
 
-Central documentation for the **AIDLC-Demo** monorepo: a Flutter workspace built to
+Central documentation for the **AIDLC-flutter-Demo** monorepo: a Flutter workspace built to
 showcase an **AI-Driven Development Lifecycle** — features arrive as PRDs, issues, or
 tickets; an LLM implements and tests them; CI reviews and builds; merges deploy to
 DEV / PREPROD / PROD.

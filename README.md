@@ -1,4 +1,4 @@
-# AIDLC-Demo
+# AIDLC-flutter-Demo
 
 **AI-Driven Development Lifecycle, demonstrated end to end.** State a requirement — a
 PRD, a GitHub issue, a JIRA ticket, or a one-line `@claude` comment — and an LLM agent
@@ -30,7 +30,7 @@ every layer.
 ## Quick start (local)
 
 ```sh
-git clone git@github.com:amol-d/AIDLC-Demo.git && cd AIDLC-Demo
+git clone git@github.com:amol-d/AIDLC-flutter-Demo.git && cd AIDLC-flutter-Demo
 fvm install && fvm use 3.35.7
 dart pub get && dart run melos bootstrap
 dart run melos run gen                # generated files are not committed
