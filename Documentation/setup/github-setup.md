@@ -10,6 +10,8 @@ GitHub → repo → Settings → Secrets and variables → Actions → *New repo
 |---|---|---|
 | `OPENAI_API_KEY` | **@codex dev + AI review workflows (the active AI path)** | https://platform.openai.com/api-keys |
 | `ANTHROPIC_API_KEY` | optional @claude workflows (skip cleanly without it) | https://console.anthropic.com → API Keys |
+| `AIDLC_BOT_APP_ID` + `AIDLC_BOT_PRIVATE_KEY` | **CI + AI review to run on agent-opened PRs** (recommended; see §2b) | GitHub App you create |
+| `AIDLC_BOT_TOKEN` | same, simpler alternative to the App | fine-grained PAT (see §2b) |
 | `FIREBASE_SERVICE_ACCOUNT` | deploys | see [firebase-setup.md](./firebase-setup.md) |
 | `FIREBASE_PROJECT_ID` | deploys | Firebase console |
 | `FIREBASE_ANDROID_APP_ID_DEV` | APK distribution (com.example.app1.dev) | Firebase console → Android app |
@@ -35,6 +37,35 @@ local Claude Code session in this repo, or install manually:
 https://github.com/apps/claude → *Install* → select `AIDLC-Demo`. The `@claude`
 workflows only respond once the app is installed AND `ANTHROPIC_API_KEY` is set.
 The `@codex` path needs no app install — just the `OPENAI_API_KEY` secret.
+
+## 2b. Bot identity so CI runs on agent PRs (recommended)
+
+By GitHub's anti-recursion rule, a PR opened with the default `GITHUB_TOKEN` does **not**
+trigger `ci.yml` or the AI-review workflows — so the `@codex`/`@claude` loop stalls at
+"PR opened" until a human re-runs CI. Give the agent a bot identity to close the loop.
+The workflows pick it up automatically (App token → PAT → default fallback); no workflow
+edit needed.
+
+**Option A — GitHub App (preferred: short-lived tokens, least privilege, higher rate limits)**
+
+1. Create the App: GitHub → Settings → Developer settings → GitHub Apps → *New GitHub App*.
+   - Repository permissions: **Contents: Read & write**, **Pull requests: Read & write**,
+     **Issues: Read & write**. No account/webhook needed.
+2. *Generate a private key* (downloads a `.pem`); note the numeric **App ID**.
+3. Install the App on this repo (App page → *Install App*).
+4. Add the secrets:
+   ```sh
+   gh secret set AIDLC_BOT_APP_ID --body "<app-id>"
+   gh secret set AIDLC_BOT_PRIVATE_KEY < private-key.pem
+   ```
+
+**Option B — fine-grained PAT (simpler, but user-owned and expires)**
+
+1. GitHub → Settings → Developer settings → Fine-grained tokens → *Generate new token*,
+   scoped to this repo with **Contents: RW**, **Pull requests: RW**, **Issues: RW**.
+2. `gh secret set AIDLC_BOT_TOKEN --body "<token>"`
+
+Leave all three unset to keep the current behaviour (PRs open, CI re-run manually).
 
 ## 3. Branch protection
 
