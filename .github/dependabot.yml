@@ -1,5 +1,11 @@
-# Dependabot targets `dev` (not the default branch `main`) so dependency PRs
-# enter the promotion flow at the bottom: dev -> preprod -> main.
+# Dependabot is ON-DEMAND ONLY. Every ecosystem sets open-pull-requests-limit: 0,
+# which disables automatic (scheduled) version-update PRs — Dependabot will not
+# fire unless you explicitly ask it to via "Check for updates" in the repo's
+# Insights -> Dependency graph -> Dependabot tab. When manually triggered it still
+# targets `dev` (not the default branch `main`) so any resulting PR enters the
+# promotion flow at the bottom: dev -> preprod -> main. To re-enable scheduled
+# updates for an ecosystem, restore its open-pull-requests-limit to a positive
+# number (e.g. 5). Security alerts are unaffected (they are a repo setting).
 version: 2
 updates:
   # Dart/Flutter dependencies across the monorepo (root + apps + packages).
@@ -14,10 +20,29 @@ updates:
       - "/package/data"
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 0 # on-demand only: no automatic PRs
     labels: [dependencies]
     commit-message:
       prefix: "chore(deps)"
+    # Guardrail for on-demand runs (and for whenever the limit is raised again):
+    # these MAJOR bumps are incompatible with the pinned Flutter 3.35.7 / Dart
+    # 3.9.2 SDK and previously broke `melos bootstrap` resolution. Hold them until
+    # the SDK itself is upgraded. See the #82 hotfix.
+    ignore:
+      - dependency-name: "meta" # flutter_test SDK pins meta 1.16.0
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "package_info_plus" # v10 needs Dart >= 3.10
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "melos" # v8 changes the workspace/orchestration schema
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "get_it" # v9 breaks the injectable version we pin
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "freezed"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "freezed_annotation"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "injectable_generator"
+        update-types: ["version-update:semver-major"]
 
   # GitHub Actions used by the workflows.
   - package-ecosystem: github-actions
@@ -25,6 +50,7 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+    open-pull-requests-limit: 0 # on-demand only: no automatic PRs
     labels: [dependencies, ci]
     commit-message:
       prefix: "chore(ci)"
@@ -35,6 +61,13 @@ updates:
     directory: "/app/app1/android"
     schedule:
       interval: monthly
+    open-pull-requests-limit: 0 # on-demand only: no automatic PRs
     labels: [dependencies, android]
     commit-message:
       prefix: "chore(deps)"
+    # Hold the Android Gradle Plugin (and, with it, the Gradle wrapper) on the 8.x
+    # line — AGP 9 failed the Android build, and Gradle 9 should only move in step
+    # with AGP 9, not ahead of it. Upgrade both together when the toolchain is bumped.
+    ignore:
+      - dependency-name: "com.android.application"
+        update-types: ["version-update:semver-major"]
