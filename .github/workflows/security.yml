@@ -40,7 +40,7 @@ jobs:
       # so it never reds CI before the graph is on or where an ecosystem
       # (e.g. pub) isn't represented in the graph yet.
       - name: Review dependencies
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@v5
         continue-on-error: true
         with:
           fail-on-severity: high
