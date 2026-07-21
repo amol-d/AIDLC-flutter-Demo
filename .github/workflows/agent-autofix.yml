@@ -54,7 +54,7 @@ jobs:
           PR=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number')
           [ -n "$PR" ] && gh pr comment "$PR" --body "🛑 Autofix stopped after 3 attempts — CI is still red. This PR needs a human. Latest CI: ${{ github.event.workflow_run.html_url }}"
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         if: steps.guard.outputs.exhausted == 'false'
         with:
           distribution: temurin
