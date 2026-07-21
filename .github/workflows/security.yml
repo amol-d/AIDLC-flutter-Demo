@@ -35,9 +35,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       # Flags vulnerable or newly-added dependencies AND denied licenses on
-      # the PR diff (the license-check piece).
+      # the PR diff (the license-check piece). Requires the repo's Dependency
+      # graph to be enabled (Settings -> Code security). Advisory / non-blocking
+      # so it never reds CI before the graph is on or where an ecosystem
+      # (e.g. pub) isn't represented in the graph yet.
       - name: Review dependencies
         uses: actions/dependency-review-action@v4
+        continue-on-error: true
         with:
           fail-on-severity: high
           deny-licenses: GPL-2.0, GPL-3.0, AGPL-3.0
