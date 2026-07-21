@@ -21,11 +21,9 @@ Secrets: `JIRA_BASE_URL` (e.g. `https://yourorg.atlassian.net`), `JIRA_USER_EMAI
 
 ## Slack — commands and notifications
 
-Template: `.github/workflow-templates/slack-notify.yml`
-
-- **Outbound (included)**: posts deploy results (env, branch, status, run link) to a
-  channel via an incoming webhook. Secret: `SLACK_WEBHOOK_URL`
-  (Slack app → Incoming Webhooks).
+- **Outbound (active)**: `.github/workflows/slack-notify.yml` posts every DEV/PREPROD/PROD
+  deploy result (name, branch, status, run link) to a channel. Just add the
+  `SLACK_WEBHOOK_URL` secret (Slack app → Incoming Webhooks); it skips cleanly without it.
 - **Inbound (optional)**: a Slack slash-command → GitHub `repository_dispatch` bridge is
   sketched in the template header; the dispatched event can open an issue that mentions
   `@claude`, closing the loop "Slack message → agent builds feature".
