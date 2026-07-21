@@ -9,7 +9,7 @@
 #
 # Inbound (Slack -> AIDLC), optional: add a Slack slash command whose request URL
 # hits a small relay (Cloudflare Worker / Lambda) that calls
-# POST /repos/amol-d/AIDLC-Demo/dispatches with event_type "slack-command" and the
+# POST /repos/amol-d/AIDLC-flutter-Demo/dispatches with event_type "slack-command" and the
 # command text; a `repository_dispatch` job can then open a GitHub issue mentioning
 # @claude — turning a Slack message into an implemented feature.
 name: Slack Notify

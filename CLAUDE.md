@@ -1,4 +1,4 @@
-# CLAUDE.md — AIDLC-Demo
+# CLAUDE.md — AIDLC-flutter-Demo
 
 Guidance for Claude (and Claude Code GitHub workflows) working in this repository.
 

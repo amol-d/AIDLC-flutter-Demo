@@ -4,9 +4,12 @@
 # feature branch and opens a PR into dev.
 # Requires: OPENAI_API_KEY secret. Skips cleanly when it is absent.
 #
-# Note: PRs opened with the default GITHUB_TOKEN do not auto-trigger CI
-# (GitHub anti-recursion rule). Re-run CI from the PR page, or replace the
-# token with a PAT/App token to lift the limitation.
+# CI on bot PRs: PRs opened with the default GITHUB_TOKEN do not auto-trigger
+# CI or the AI review (GitHub anti-recursion rule). Configure a bot identity to
+# lift this — a GitHub App (AIDLC_BOT_APP_ID + AIDLC_BOT_PRIVATE_KEY, preferred)
+# or a PAT (AIDLC_BOT_TOKEN). The branch push + PR then use that token so the
+# full loop (CI -> AI review) runs automatically. Falls back to GITHUB_TOKEN
+# (manual CI re-run) when neither is set. See Documentation/setup/github-setup.md.
 name: Codex
 
 on:
@@ -36,10 +39,24 @@ jobs:
       pull-requests: write
       issues: write
     steps:
+      # Prefer a GitHub App token so the branch push + PR are attributed to a
+      # bot identity that CI/AI-review will react to (the default GITHUB_TOKEN
+      # is muted by GitHub's anti-recursion rule). Skipped when the App is not
+      # configured; the checkout/PR steps then fall back to a PAT or the token.
+      - name: Generate bot app token
+        id: bot-token
+        if: ${{ secrets.AIDLC_BOT_APP_ID != '' }}
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.AIDLC_BOT_APP_ID }}
+          private-key: ${{ secrets.AIDLC_BOT_PRIVATE_KEY }}
+
       - uses: actions/checkout@v4
         with:
           ref: dev
           fetch-depth: 0
+          # App token -> PAT -> default. Persisted so `git push` reuses it.
+          token: ${{ steps.bot-token.outputs.token || secrets.AIDLC_BOT_TOKEN || github.token }}
 
       # Toolchain first, so the agent can run the repo verification loop.
       - uses: actions/setup-java@v4
@@ -92,7 +109,8 @@ jobs:
 
       - name: Push feature branch and open PR into dev
         env:
-          GH_TOKEN: ${{ github.token }}
+          # Same bot identity as checkout, so the PR triggers CI + AI review.
+          GH_TOKEN: ${{ steps.bot-token.outputs.token || secrets.AIDLC_BOT_TOKEN || github.token }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_TITLE: ${{ github.event.issue.title }}
         run: |
