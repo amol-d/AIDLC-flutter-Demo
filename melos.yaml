@@ -58,8 +58,16 @@ scripts:
       melos run force_build_all
 
   test:unit:
-    description: Run unit/widget tests in every package that has a test directory.
-    run: melos exec -c 1 --dir-exists="test" --depends-on="flutter_test" -- "flutter test"
+    description: Run unit/widget tests in every package that has a test directory (golden tests excluded — see test:golden).
+    run: melos exec -c 1 --dir-exists="test" --depends-on="flutter_test" -- "flutter test --exclude-tags golden"
+
+  test:coverage:
+    description: Run tests with coverage in every package that has tests (writes coverage/lcov.info).
+    run: melos exec -c 1 --dir-exists="test" --depends-on="flutter_test" -- "flutter test --coverage --exclude-tags golden"
+
+  test:golden:
+    description: Run golden (pixel) tests. Baselines are platform-sensitive; treat as advisory across OSes.
+    run: melos exec -c 1 --dir-exists="test" --depends-on="flutter_test" -- "flutter test --tags golden"
 
   test:
     description: Alias for test:unit.

@@ -1,0 +1,3 @@
+tags:
+  golden:
+    description: Golden (pixel) tests; baselines are platform-sensitive, run via test:golden.

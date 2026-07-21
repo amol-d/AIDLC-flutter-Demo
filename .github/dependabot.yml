@@ -1,0 +1,35 @@
+version: 2
+updates:
+  # Dart/Flutter dependencies across the monorepo (root + apps + packages).
+  - package-ecosystem: pub
+    directories:
+      - "/"
+      - "/app/app1"
+      - "/app/app2"
+      - "/package/shared"
+      - "/package/domain"
+      - "/package/data"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels: [dependencies]
+    commit-message:
+      prefix: "chore(deps)"
+
+  # GitHub Actions used by the workflows.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    labels: [dependencies, ci]
+    commit-message:
+      prefix: "chore(ci)"
+
+  # Android Gradle dependencies for app1.
+  - package-ecosystem: gradle
+    directory: "/app/app1/android"
+    schedule:
+      interval: monthly
+    labels: [dependencies, android]
+    commit-message:
+      prefix: "chore(deps)"

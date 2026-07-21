@@ -1,6 +1,6 @@
 name: app1
 description: AIDLC demo application 1 - login and home with deeplinks, web slugs, and flavors.
-version: 1.0.0+1
+version: 1.1.0+2
 publish_to: none
 
 environment:
@@ -17,6 +17,8 @@ dependencies:
   auto_route: ^9.2.2
   data:
     path: ../../package/data
+  firebase_core: ^3.8.0
+  firebase_crashlytics: ^4.2.0
   domain:
     path: ../../package/domain
   flutter_bloc: ^8.1.6
@@ -29,6 +31,8 @@ dependencies:
 
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  integration_test:
     sdk: flutter
   auto_route_generator: ^9.0.0
   bloc_test: ^9.1.7

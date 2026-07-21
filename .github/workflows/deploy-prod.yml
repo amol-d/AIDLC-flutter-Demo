@@ -48,6 +48,58 @@ jobs:
           channelId: live
           target: app1-prod
 
+  # Post-deploy smoke: verify PROD actually serves the app. On failure the
+  # rollback job opens an automated revert PR.
+  smoke-web:
+    needs: deploy-web
+    runs-on: ubuntu-latest
+    steps:
+      - name: Smoke test the PROD site
+        env:
+          URL: ${{ vars.SMOKE_URL_PROD || 'https://app1-prod.web.app' }}
+        run: |
+          echo "Smoke testing $URL"
+          for i in 1 2 3 4 5; do
+            CODE=$(curl -sS -o "$RUNNER_TEMP/index.html" -w '%{http_code}' -L --max-time 20 "$URL" || echo 000)
+            if [ "$CODE" = "200" ]; then break; fi
+            echo "attempt $i: HTTP $CODE — retrying"; sleep 10
+          done
+          [ "$CODE" = "200" ] || { echo "::error::PROD smoke failed: HTTP $CODE from $URL"; exit 1; }
+          if ! grep -qE 'flutter_bootstrap\.js|main\.dart\.js|flutter\.js' "$RUNNER_TEMP/index.html"; then
+            echo "::error::PROD smoke failed: $URL served 200 but no Flutter bootstrap found"; exit 1
+          fi
+          echo "✅ PROD smoke passed ($URL serves the app)"
+
+  # Automated rollback: if the PROD smoke fails, open a revert PR against main
+  # (direct pushes to protected main aren't allowed — a human merges the revert).
+  rollback:
+    needs: smoke-web
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.AIDLC_BOT_TOKEN || github.token }}
+      - name: Open automated rollback (revert) PR
+        env:
+          GH_TOKEN: ${{ secrets.AIDLC_BOT_TOKEN || github.token }}
+        run: |
+          git config user.name "codex-bot"
+          git config user.email "codex-bot@users.noreply.github.com"
+          BR="rollback/prod-${GITHUB_SHA::7}"
+          git checkout -b "$BR"
+          # Revert the deployed commit (merge commit -> mainline parent, else plain).
+          git revert --no-edit -m 1 "$GITHUB_SHA" || git revert --no-edit "$GITHUB_SHA"
+          git push -u origin "$BR"
+          gh pr create --base main --head "$BR" \
+            --title "revert: PROD smoke failed for ${GITHUB_SHA::7}" \
+            --body "🚨 Automated rollback — the PROD post-deploy smoke test failed. This reverts the deployed change to restore the last-good state. Review and merge to complete the rollback."
+
   deploy-android:
     needs: check-secrets
     if: needs.check-secrets.outputs.android == 'true'
