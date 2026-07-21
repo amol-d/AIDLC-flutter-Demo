@@ -1,0 +1,37 @@
+# Promotion guard: a promotion PR (dev -> preprod, preprod -> main) may only
+# merge if the LOWER environment's latest deploy+smoke run succeeded. Exposed as
+# the required status check `promotion-guard` (see .github/settings.yml).
+name: Promotion guard
+
+on:
+  pull_request:
+    branches: [preprod, main]
+
+jobs:
+  promotion-guard:
+    name: promotion-guard
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Verify the lower environment deploy + smoke passed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.event.pull_request.base.ref }}
+        run: |
+          if [ "$BASE" = "preprod" ]; then
+            WF="deploy-dev.yml"; BR="dev"; ENVN="DEV"
+          elif [ "$BASE" = "main" ]; then
+            WF="deploy-preprod.yml"; BR="preprod"; ENVN="PREPROD"
+          else
+            echo "Not a promotion PR ($BASE) — nothing to guard."; exit 0
+          fi
+          CONC=$(gh run list --workflow "$WF" --branch "$BR" --limit 1 \
+            --json conclusion --jq '.[0].conclusion // "none"')
+          echo "Latest $WF on '$BR': $CONC"
+          if [ "$CONC" != "success" ]; then
+            echo "::error::Cannot promote to $BASE — latest $ENVN deploy+smoke on '$BR' is '$CONC' (need success). Deploy/verify $ENVN first."
+            exit 1
+          fi
+          echo "✅ $ENVN deploy + smoke verified — promotion to $BASE allowed."

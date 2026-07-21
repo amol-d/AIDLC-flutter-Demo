@@ -1,0 +1,101 @@
+# Auto-iterate: when CI fails on an agent-opened PR (feature/codex-issue-*),
+# re-invoke Codex to fix its own PR, push the fix (which re-triggers CI), and
+# repeat — bounded to 3 attempts so a stuck run can't loop forever.
+# Requires: OPENAI_API_KEY + AIDLC_BOT_TOKEN. Skips cleanly when either is absent.
+name: Agent autofix
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+jobs:
+  gate:
+    # Only for FAILED CI runs on a PR from an agent branch.
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      startsWith(github.event.workflow_run.head_branch, 'feature/codex-issue-')
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - id: check
+        run: echo "run=${{ secrets.OPENAI_API_KEY != '' && secrets.AIDLC_BOT_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+
+  autofix:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+    env:
+      BRANCH: ${{ github.event.workflow_run.head_branch }}
+      GH_TOKEN: ${{ secrets.AIDLC_BOT_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+          token: ${{ secrets.AIDLC_BOT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Loop guard (max 3 autofix attempts)
+        id: guard
+        run: |
+          ATTEMPTS=$(git log --oneline "origin/$BRANCH" | grep -c '\[autofix\]' || true)
+          echo "attempts=$ATTEMPTS" >> "$GITHUB_OUTPUT"
+          if [ "$ATTEMPTS" -ge 3 ]; then echo "exhausted=true" >> "$GITHUB_OUTPUT"; else echo "exhausted=false" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Give up after 3 attempts
+        if: steps.guard.outputs.exhausted == 'true'
+        run: |
+          PR=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number')
+          [ -n "$PR" ] && gh pr comment "$PR" --body "🛑 Autofix stopped after 3 attempts — CI is still red. This PR needs a human. Latest CI: ${{ github.event.workflow_run.html_url }}"
+
+      - uses: actions/setup-java@v4
+        if: steps.guard.outputs.exhausted == 'false'
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: ./.github/actions/flutter-setup
+        if: steps.guard.outputs.exhausted == 'false'
+
+      - name: Install + authenticate Codex
+        if: steps.guard.outputs.exhausted == 'false'
+        run: |
+          npm install -g @openai/codex
+          printf '%s' "${{ secrets.OPENAI_API_KEY }}" | codex login --with-api-key
+
+      - name: Collect the failing CI logs
+        if: steps.guard.outputs.exhausted == 'false'
+        run: gh run view ${{ github.event.workflow_run.id }} --log-failed > "$RUNNER_TEMP/ci-failure.log" 2>&1 || true
+
+      - name: Run Codex to fix the failure
+        if: steps.guard.outputs.exhausted == 'false'
+        run: |
+          codex exec --dangerously-bypass-approvals-and-sandbox </dev/null \
+            "CI failed on this PR branch. The failing job logs are in
+             $RUNNER_TEMP/ci-failure.log — read them first and fix the root
+             cause, following AGENTS.md and .claude/skills/*. Then run the
+             verification loop until green:
+             dart run melos run gen && dart run melos run format &&
+             dart run melos run analyze && dart run melos run test:unit.
+             Edit files in the working tree only — do NOT commit or push."
+
+      - name: Commit and push the fix
+        if: steps.guard.outputs.exhausted == 'false'
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            PR=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number')
+            [ -n "$PR" ] && gh pr comment "$PR" --body "Autofix run made no changes — CI failure needs a human. Logs: ${{ github.event.workflow_run.html_url }}"
+            exit 0
+          fi
+          git config user.name "codex-bot"
+          git config user.email "codex-bot@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: address CI failure [autofix] (attempt $(( ${{ steps.guard.outputs.attempts }} + 1 )))"
+          git push
+          PR=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number')
+          [ -n "$PR" ] && gh pr comment "$PR" --body "🔧 Pushed an autofix (attempt $(( ${{ steps.guard.outputs.attempts }} + 1 ))/3) for the CI failure. CI will re-run."

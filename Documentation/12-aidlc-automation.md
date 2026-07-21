@@ -48,12 +48,24 @@ user approval — merges are always human.
 | `.github/workflows/claude.yml` | `@claude` mentions | Optional Anthropic dev agent; skips without `ANTHROPIC_API_KEY`. |
 | `.github/workflows/claude-code-review.yml` | PR opened/updated | Optional Anthropic reviewer; skips without `ANTHROPIC_API_KEY`. |
 | `.github/workflows/ci.yml` | PRs + pushes to dev/preprod/main | analyze, test:unit, web builds (both apps), Android debug build on PRs into preprod/main. |
-| `.github/workflows/deploy-*.yml` | push to dev/preprod/main | Firebase Hosting (web) + App Distribution (APK). |
+| `.github/workflows/agent-autofix.yml` | CI run **failed** on a `feature/codex-issue-*` PR | Re-invokes Codex to fix its own PR from the failing logs, pushes the fix (re-triggers CI); bounded to 3 attempts. |
+| `.github/workflows/promotion-guard.yml` | PR into preprod/main | Fails the required `promotion-guard` check unless the lower env's latest deploy+smoke succeeded. |
+| `.github/workflows/deploy-*.yml` | push to dev/preprod/main | Firebase Hosting (web) + App Distribution (APK); DEV also runs a post-deploy **smoke** test. |
 
-**Known limitation:** PRs opened by `codex.yml` use the default `GITHUB_TOKEN`, and
-GitHub does not auto-trigger CI on such PRs (anti-recursion). Re-run CI from the PR's
-Checks tab, or store a fine-grained PAT as `GH_PAT` and use it in the PR-creation step
-to lift this.
+## Closing the loop
+
+The pieces that make the loop run end-to-end without a human babysitting it:
+
+- **CI on agent PRs** — `codex.yml`/`claude.yml` push and open the PR with a bot identity
+  (`AIDLC_BOT_TOKEN` / a GitHub App), so CI and the AI review actually fire (the default
+  `GITHUB_TOKEN` is muted by GitHub's anti-recursion rule). See
+  [setup/github-setup.md](setup/github-setup.md) §2b.
+- **Self-heal** — if CI fails, `agent-autofix.yml` feeds the failing logs back to Codex,
+  which fixes and re-pushes (up to 3 attempts, then it asks for a human).
+- **Enforced gates** — `analyze-test`, `build-web`, and `ai-review` are *required* status
+  checks (`.github/settings.yml`), so nothing merges unless CI is green and the review ran.
+- **Verified promotion** — DEV runs a post-deploy smoke test; `promotion-guard` blocks a
+  `dev → preprod` (and `preprod → main`) PR until that smoke succeeded.
 
 ## Agent knowledge
 
