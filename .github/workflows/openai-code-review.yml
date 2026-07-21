@@ -75,3 +75,31 @@ jobs:
             cat "$RUNNER_TEMP/review.md"
           } > "$RUNNER_TEMP/comment.md"
           gh pr comment ${{ github.event.pull_request.number }} --body-file "$RUNNER_TEMP/comment.md"
+
+  # Publish an `ai-review` commit status so it can be a REQUIRED status check
+  # (see .github/settings.yml). Always reports — success when the review ran or
+  # was skipped (no key), failure only if the review job errored — so requiring
+  # it never deadlocks a PR.
+  report:
+    needs: [check, review]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+    steps:
+      - name: Set ai-review status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ needs.check.outputs.run }}" != "true" ]; then
+            STATE=success; DESC="Skipped (no OPENAI_API_KEY)"
+          elif [ "${{ needs.review.result }}" = "success" ]; then
+            STATE=success; DESC="Review posted"
+          else
+            STATE=failure; DESC="Review job failed"
+          fi
+          gh api -X POST "repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }}" \
+            -f state="$STATE" \
+            -f context="ai-review" \
+            -f description="$DESC" \
+            -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
