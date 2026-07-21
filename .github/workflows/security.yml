@@ -18,7 +18,7 @@ jobs:
     name: secret-scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # full history so gitleaks scans every commit
       # gitleaks-action is free for personal/public repos; orgs need
@@ -33,7 +33,7 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # Flags vulnerable or newly-added dependencies AND denied licenses on
       # the PR diff (the license-check piece). Requires the repo's Dependency
       # graph to be enabled (Settings -> Code security). Advisory / non-blocking

@@ -18,7 +18,7 @@ jobs:
     name: analyze-test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/flutter-setup
       - name: Analyze (fatal infos)
         run: dart run melos run analyze
@@ -30,7 +30,7 @@ jobs:
     needs: analyze-test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/flutter-setup
       - name: Build app1 (web)
         working-directory: app/app1
@@ -44,7 +44,7 @@ jobs:
     needs: analyze-test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/flutter-setup
       - name: Run tests with coverage
         run: dart run melos run test:coverage
@@ -73,7 +73,7 @@ jobs:
     # on Linux CI so cross-platform anti-aliasing drift can't block a merge.
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/flutter-setup
       - name: Golden tests (advisory)
         working-directory: app/app1
@@ -87,7 +87,7 @@ jobs:
     # Lab is documented as a follow-up (Documentation/11-testing.md).
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/flutter-setup
       - name: Install chromedriver
         run: sudo apt-get update && sudo apt-get install -y chromium-chromedriver
