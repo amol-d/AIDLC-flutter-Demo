@@ -26,6 +26,7 @@ branches:
         contexts:
           - analyze-test
           - build-web
+          - coverage
           - ai-review
           - promotion-guard
       required_conversation_resolution: true
@@ -41,6 +42,7 @@ branches:
         contexts:
           - analyze-test
           - build-web
+          - coverage
           - ai-review
           - promotion-guard
       enforce_admins: false
@@ -53,6 +55,7 @@ branches:
         contexts:
           - analyze-test
           - build-web
+          - coverage
           - ai-review
       enforce_admins: false
       restrictions: null

@@ -39,6 +39,68 @@ jobs:
         working-directory: app/app2
         run: flutter build web --release --dart-define FLAVOR=dev
 
+  coverage:
+    name: coverage
+    needs: analyze-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/flutter-setup
+      - name: Run tests with coverage
+        run: dart run melos run test:coverage
+      - name: Enforce coverage threshold (65%)
+        run: |
+          python3 - <<'PY'
+          import glob, sys
+          total = cov = 0
+          for f in glob.glob('**/coverage/lcov.info', recursive=True):
+              for line in open(f):
+                  if line.startswith('DA:'):
+                      _ln, hits = line[3:].strip().split(',')[:2]
+                      total += 1
+                      if int(hits) > 0:
+                          cov += 1
+          pct = cov / total * 100 if total else 0
+          print(f"Coverage: {cov}/{total} = {pct:.1f}% (threshold 65%)")
+          sys.exit(0 if pct >= 65 else 1)
+          PY
+
+  golden:
+    name: golden
+    needs: analyze-test
+    runs-on: ubuntu-latest
+    # Golden baselines are platform-sensitive (generated on macOS); advisory
+    # on Linux CI so cross-platform anti-aliasing drift can't block a merge.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/flutter-setup
+      - name: Golden tests (advisory)
+        working-directory: app/app1
+        run: flutter test --tags golden
+
+  integration-web:
+    name: integration-web
+    needs: analyze-test
+    runs-on: ubuntu-latest
+    # Advisory until stabilized on CI; a real-device matrix via Firebase Test
+    # Lab is documented as a follow-up (Documentation/11-testing.md).
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/flutter-setup
+      - name: Install chromedriver
+        run: sudo apt-get update && sudo apt-get install -y chromium-chromedriver
+      - name: Run integration_test on Chrome
+        working-directory: app/app1
+        run: |
+          chromedriver --port=4444 &
+          sleep 3
+          flutter drive \
+            --driver=test_driver/integration_test.dart \
+            --target=integration_test/app_test.dart \
+            -d web-server --release --dart-define FLAVOR=dev
+
   # Android is the slow lane and lives in its own workflow (android-build.yml),
   # gated at the trigger level to PRs into preprod/main. Keeping it out of this
   # matrix avoids a redundant "skipped" build-android check on push runs, where
