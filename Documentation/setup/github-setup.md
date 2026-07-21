@@ -67,22 +67,24 @@ edit needed.
 
 Leave all three unset to keep the current behaviour (PRs open, CI re-run manually).
 
-## 3. Branch protection
+## 3. Branch protection (as code)
 
-Settings → Branches → *Add branch protection rule*, once per branch (`main`, `preprod`,
-`dev`):
+Branch protection is declared in [`.github/settings.yml`](../../.github/settings.yml) and
+applied by the **Settings** GitHub App — install it once
+(https://github.com/apps/settings → *Install* → this repo) and it keeps `main`, `preprod`,
+and `dev` in sync on every push. Required status checks: `analyze-test`, `build-web`,
+`ai-review`, and (on preprod/main) `promotion-guard`.
 
-- Require a pull request before merging (1 approval recommended on `main`)
-- Require status checks to pass: select **analyze-test** (from `ci.yml`)
-- Block force pushes
-
-CLI equivalent:
+Prefer to set it by hand instead? Settings → Branches → *Add rule* per branch, requiring
+those checks + a PR before merging + blocking force pushes. Equivalent CLI:
 
 ```sh
 for BR in main preprod dev; do
   gh api -X PUT "repos/amol-d/AIDLC-flutter-Demo/branches/$BR/protection" \
     -F 'required_status_checks[strict]=true' \
     -F 'required_status_checks[contexts][]=analyze-test' \
+    -F 'required_status_checks[contexts][]=build-web' \
+    -F 'required_status_checks[contexts][]=ai-review' \
     -F 'enforce_admins=false' \
     -F 'required_pull_request_reviews[required_approving_review_count]=1' \
     -F 'restrictions=null' \
@@ -90,10 +92,14 @@ for BR in main preprod dev; do
 done
 ```
 
+> Optional: set the `SMOKE_URL_DEV` repo **variable** if your DEV hosting URL is not
+> `https://app1-dev.web.app` (used by the post-deploy smoke test).
+
 ## 4. Smoke test
 
 Open an issue containing: `@codex add a version label under the login button`.
 The `codex.yml` workflow should start within a minute, push a
 `feature/codex-issue-<N>` branch, open a PR into `dev`, and comment the PR link on the
-issue. (Note: CI on that PR needs a manual re-run unless you configure a PAT — see
-Documentation/12-aidlc-automation.md.)
+issue. With `AIDLC_BOT_TOKEN` (or the App) configured, CI and the AI review then run on
+that PR automatically, and `agent-autofix` re-invokes Codex if CI fails — see
+[12-aidlc-automation.md](../12-aidlc-automation.md).

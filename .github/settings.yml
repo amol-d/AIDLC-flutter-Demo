@@ -1,0 +1,58 @@
+# Branch protection as code. Applied by the GitHub "Settings" app
+# (https://github.com/apps/settings) — install it on this repo and it keeps
+# the settings below in sync on every push to the default branch. See
+# Documentation/setup/github-setup.md.
+#
+# Required status checks (contexts) map to:
+#   analyze-test, build-web  -> ci.yml jobs
+#   ai-review                -> openai-code-review.yml (always reports; see that file)
+#   promotion-guard          -> promotion-guard.yml (only on PRs into preprod/main)
+
+repository:
+  has_issues: true
+  has_wiki: false
+  allow_squash_merge: true
+  allow_merge_commit: true
+  delete_branch_on_merge: true
+
+branches:
+  - name: main
+    protection:
+      required_pull_request_reviews:
+        required_approving_review_count: 1
+        dismiss_stale_reviews: true
+      required_status_checks:
+        strict: true
+        contexts:
+          - analyze-test
+          - build-web
+          - ai-review
+          - promotion-guard
+      required_conversation_resolution: true
+      enforce_admins: false
+      restrictions: null
+
+  - name: preprod
+    protection:
+      required_pull_request_reviews:
+        required_approving_review_count: 1
+      required_status_checks:
+        strict: true
+        contexts:
+          - analyze-test
+          - build-web
+          - ai-review
+          - promotion-guard
+      enforce_admins: false
+      restrictions: null
+
+  - name: dev
+    protection:
+      required_status_checks:
+        strict: true
+        contexts:
+          - analyze-test
+          - build-web
+          - ai-review
+      enforce_admins: false
+      restrictions: null
