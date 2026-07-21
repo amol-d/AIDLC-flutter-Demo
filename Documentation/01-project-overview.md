@@ -1,6 +1,6 @@
 # Project Overview
 
-AIDLC-Demo is a working demonstration of an **AI-Driven Development Lifecycle**:
+AIDLC-flutter-Demo is a working demonstration of an **AI-Driven Development Lifecycle**:
 
 1. A human (or external tool) states a requirement — PRD/BRD text, a GitHub issue, a JIRA
    ticket, or a plain `@claude` comment.

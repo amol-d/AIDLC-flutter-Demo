@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Review a PR or diff against AIDLC-Demo architecture and quality rules. Use for any code review request in this repository.
+description: Review a PR or diff against AIDLC-flutter-Demo architecture and quality rules. Use for any code review request in this repository.
 ---
 
 # Code review checklist

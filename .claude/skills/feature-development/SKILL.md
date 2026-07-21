@@ -1,6 +1,6 @@
 ---
 name: feature-development
-description: Implement a new feature in the AIDLC-Demo Flutter monorepo following clean architecture. Use when asked to add a screen, API integration, or any product feature from a PRD, issue, or ticket.
+description: Implement a new feature in the AIDLC-flutter-Demo monorepo following clean architecture. Use when asked to add a screen, API integration, or any product feature from a PRD, issue, or ticket.
 ---
 
 # Feature development recipe

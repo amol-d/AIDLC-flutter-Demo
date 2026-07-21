@@ -32,7 +32,7 @@ gh secret set FIREBASE_ANDROID_APP_ID_PROD --body "1:1234567890:android:ghi789"
 
 Only needed for the optional `@claude` path. Either run `/install-github-app` from a
 local Claude Code session in this repo, or install manually:
-https://github.com/apps/claude → *Install* → select `AIDLC-Demo`. The `@claude`
+https://github.com/apps/claude → *Install* → select `AIDLC-flutter-Demo`. The `@claude`
 workflows only respond once the app is installed AND `ANTHROPIC_API_KEY` is set.
 The `@codex` path needs no app install — just the `OPENAI_API_KEY` secret.
 
@@ -49,7 +49,7 @@ CLI equivalent:
 
 ```sh
 for BR in main preprod dev; do
-  gh api -X PUT "repos/amol-d/AIDLC-Demo/branches/$BR/protection" \
+  gh api -X PUT "repos/amol-d/AIDLC-flutter-Demo/branches/$BR/protection" \
     -F 'required_status_checks[strict]=true' \
     -F 'required_status_checks[contexts][]=analyze-test' \
     -F 'enforce_admins=false' \
