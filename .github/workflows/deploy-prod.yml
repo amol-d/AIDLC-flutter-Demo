@@ -34,7 +34,7 @@ jobs:
     if: needs.check-secrets.outputs.web == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/flutter-setup
       - name: Build app1 web (PROD)
         working-directory: app/app1
@@ -80,7 +80,7 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: main
           fetch-depth: 0
@@ -105,7 +105,7 @@ jobs:
     if: needs.check-secrets.outputs.android == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
         with:
           distribution: temurin

@@ -27,7 +27,7 @@ jobs:
           else
             echo "Not a promotion PR ($BASE) — nothing to guard."; exit 0
           fi
-          CONC=$(gh run list --workflow "$WF" --branch "$BR" --limit 1 \
+          CONC=$(gh run list -R "$GITHUB_REPOSITORY" --workflow "$WF" --branch "$BR" --limit 1 \
             --json conclusion --jq '.[0].conclusion // "none"')
           echo "Latest $WF on '$BR': $CONC"
           if [ "$CONC" != "success" ]; then
