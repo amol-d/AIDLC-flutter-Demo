@@ -3,15 +3,17 @@ import 'package:shared/shared.dart';
 
 /// Small chip showing which environment the build targets (DEV/PREPROD/PROD).
 class FlavorBadge extends StatelessWidget {
-  const FlavorBadge({super.key});
+  const FlavorBadge({super.key, this.flavor});
+
+  final Flavor? flavor;
 
   @override
   Widget build(BuildContext context) {
-    final flavor = EnvConstants.flavor;
+    final flavor = this.flavor ?? EnvConstants.flavor;
     final color = switch (flavor) {
       Flavor.dev => Colors.green,
-      Flavor.preprod => Colors.orange,
-      Flavor.prod => Colors.red,
+      Flavor.preprod => Colors.blue,
+      Flavor.prod => const Color(0xFF8F00FF),
     };
 
     return Container(
