@@ -45,6 +45,11 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
+    # The `secrets` context is not allowed in a step `if:`, so surface the
+    # App-configured check as a job-level env var (env MAY read secrets) and
+    # test that in the step condition instead.
+    env:
+      HAS_BOT_APP: ${{ secrets.AIDLC_BOT_APP_ID != '' }}
     steps:
       # Prefer a GitHub App token so the branch push + PR are attributed to a
       # bot identity that CI/AI-review will react to (the default GITHUB_TOKEN
@@ -52,7 +57,7 @@ jobs:
       # configured; the checkout/PR steps then fall back to a PAT or the token.
       - name: Generate bot app token
         id: bot-token
-        if: ${{ secrets.AIDLC_BOT_APP_ID != '' }}
+        if: env.HAS_BOT_APP == 'true'
         uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.AIDLC_BOT_APP_ID }}
