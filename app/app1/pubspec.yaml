@@ -1,6 +1,6 @@
 name: app1
 description: AIDLC demo application 1 - login and home with deeplinks, web slugs, and flavors.
-version: 1.1.0+2
+version: 1.2.0+3
 publish_to: none
 
 environment:
